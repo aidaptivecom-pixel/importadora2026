@@ -1,4 +1,4 @@
-import { ChartDataPoint, KPIStats, Shipment, CategoryStat, ClienteMayorista, EcommerceTienda, Proveedor, InventarioItem, Operacion, UrgentItem, ProximoHito, PagoProximo, CajaBreakdown } from './types';
+import { ChartDataPoint, KPIStats, Shipment, CategoryStat, ClienteMayorista, EcommerceTienda, Proveedor, InventarioItem, Operacion, UrgentItem, ProximoHito, PagoProximo, CajaBreakdown, ContactoCRM } from './types';
 
 // ══════════════════════════════════════════════════════════════════════════════
 // NEXO GLOBAL TRADE - DATOS PARA PROPUESTA DE INVERSIÓN
@@ -91,9 +91,151 @@ export const INVENTARIO: InventarioItem[] = [
   { id: 'INV-007', sku: 'PET-BED-LUX', nombre: 'Camas Luxury Mascotas L', categoria: 'Mascotas', stock: 125, stockMinimo: 50, costoUSD: 18.00, precioVenta: 55000, ubicacion: 'Depósito B - Estante 3', ultimoMovimiento: '2026-01-06' },
   { id: 'INV-008', sku: 'DOLL-COLLECT-25', nombre: 'Muñecas Colección 2025', categoria: 'Coleccionables', stock: 210, stockMinimo: 80, costoUSD: 22.00, precioVenta: 75000, ubicacion: 'Depósito C - Estante 1', ultimoMovimiento: '2026-01-05' }
 ];
-// Valor: 450*2.5 + 12*3.2 + 85*12 + 890*1.8 + 520*4.5 + 680*3.8 + 125*18 + 210*22
-// = 1125 + 38.4 + 1020 + 1602 + 2340 + 2584 + 2250 + 4620 = $15,579.4 USD (costo)
-// Valor venta estimado: ~$52K
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CRM - PIPELINE DE VENTAS Y CONTACTOS
+// ══════════════════════════════════════════════════════════════════════════════
+export const CRM_CONTACTOS: ContactoCRM[] = [
+  {
+    id: 'CRM-001', nombre: 'Martín Rodríguez', empresa: 'Electro Rosario SA', cargo: 'Gerente de Compras',
+    email: 'mrodriguez@electrorosario.com.ar', telefono: '+54 341 456-7890', ciudad: 'Rosario',
+    etapa: 'negociacion', origen: 'referido', valorPotencial: 85000, probabilidad: 70,
+    ultimoContacto: '2026-01-10', proximaAccion: 'Enviar cotización actualizada', fechaProximaAccion: '2026-01-14',
+    ownerVentas: 'Matías', tags: ['electrónica', 'mayorista', 'prioritario'],
+    interacciones: [
+      { id: 'INT-001-1', tipo: 'reunion', fecha: '2026-01-10', descripcion: 'Reunión presencial en Rosario. Interesado en lote electrónica Q1.', usuario: 'Matías' },
+      { id: 'INT-001-2', tipo: 'email', fecha: '2026-01-08', descripcion: 'Envío de catálogo y lista de precios actualizada.', usuario: 'Matías' },
+      { id: 'INT-001-3', tipo: 'llamada', fecha: '2026-01-05', descripcion: 'Primer contacto. Referido por TechStore Argentina.', usuario: 'Matías' },
+    ],
+    fechaCreacion: '2025-12-28'
+  },
+  {
+    id: 'CRM-002', nombre: 'Carolina Vega', empresa: 'PetShop Nordelta', cargo: 'Dueña',
+    email: 'carolina@petshopnordelta.com', telefono: '+54 11 5555-1234', ciudad: 'Buenos Aires',
+    etapa: 'propuesta', origen: 'web', valorPotencial: 42000, probabilidad: 55,
+    ultimoContacto: '2026-01-09', proximaAccion: 'Seguimiento propuesta', fechaProximaAccion: '2026-01-15',
+    ownerVentas: 'Matías', tags: ['mascotas', 'retail', 'premium'],
+    interacciones: [
+      { id: 'INT-002-1', tipo: 'email', fecha: '2026-01-09', descripcion: 'Propuesta enviada para collares LED y camas premium.', usuario: 'Matías' },
+      { id: 'INT-002-2', tipo: 'whatsapp', fecha: '2026-01-07', descripcion: 'Conversación sobre productos premium para mascotas.', usuario: 'Matías' },
+    ],
+    fechaCreacion: '2026-01-03'
+  },
+  {
+    id: 'CRM-003', nombre: 'Roberto Sánchez', empresa: 'Distribuidora Centro', cargo: 'Director Comercial',
+    email: 'rsanchez@distcentro.com.ar', telefono: '+54 351 234-5678', ciudad: 'Córdoba',
+    etapa: 'contactado', origen: 'feria', valorPotencial: 120000, probabilidad: 35,
+    ultimoContacto: '2026-01-06', proximaAccion: 'Agendar videollamada demo', fechaProximaAccion: '2026-01-16',
+    ownerVentas: 'Matías', tags: ['mayorista', 'multirubro', 'córdoba'],
+    interacciones: [
+      { id: 'INT-003-1', tipo: 'llamada', fecha: '2026-01-06', descripcion: 'Llamada de seguimiento post-feria. Interés en Smart Home.', usuario: 'Matías' },
+      { id: 'INT-003-2', tipo: 'nota', fecha: '2025-12-15', descripcion: 'Contacto en feria Expo Import 2025. Dejó tarjeta.', usuario: 'Matías' },
+    ],
+    fechaCreacion: '2025-12-15'
+  },
+  {
+    id: 'CRM-004', nombre: 'Ana María López', empresa: 'Juguetería El Reino', cargo: 'Compradora',
+    email: 'alopez@elreino.com.ar', telefono: '+54 261 987-6543', ciudad: 'Mendoza',
+    etapa: 'lead', origen: 'linkedin', valorPotencial: 35000, probabilidad: 20,
+    ultimoContacto: '2026-01-02', proximaAccion: 'Primer llamado', fechaProximaAccion: '2026-01-13',
+    ownerVentas: 'Matías', tags: ['juguetes', 'coleccionables', 'mendoza'],
+    interacciones: [
+      { id: 'INT-004-1', tipo: 'email', fecha: '2026-01-02', descripcion: 'Email introductorio con presentación de empresa.', usuario: 'Matías' },
+    ],
+    fechaCreacion: '2026-01-02'
+  },
+  {
+    id: 'CRM-005', nombre: 'Diego Martínez', empresa: 'SmartHouse Arg', cargo: 'CEO',
+    email: 'diego@smarthouse.com.ar', telefono: '+54 11 4444-9999', ciudad: 'Buenos Aires',
+    etapa: 'ganado', origen: 'referido', valorPotencial: 95000, probabilidad: 100,
+    ultimoContacto: '2026-01-08', ownerVentas: 'Matías', tags: ['smart home', 'b2b', 'cliente'],
+    interacciones: [
+      { id: 'INT-005-1', tipo: 'reunion', fecha: '2026-01-08', descripcion: 'Firma de contrato. Primer pedido $95K.', usuario: 'Matías' },
+      { id: 'INT-005-2', tipo: 'llamada', fecha: '2026-01-03', descripcion: 'Negociación final de condiciones.', usuario: 'Matías' },
+      { id: 'INT-005-3', tipo: 'email', fecha: '2025-12-20', descripcion: 'Propuesta comercial.', usuario: 'Matías' },
+    ],
+    fechaCreacion: '2025-12-10'
+  },
+  {
+    id: 'CRM-006', nombre: 'Lucía Fernández', empresa: 'Bazar Online Store', cargo: 'Gerente General',
+    email: 'lucia@bazaronline.com.ar', telefono: '+54 11 3333-7777', ciudad: 'Buenos Aires',
+    etapa: 'lead', origen: 'ecommerce', valorPotencial: 28000, probabilidad: 15,
+    ultimoContacto: '2025-12-28', proximaAccion: 'Enviar catálogo', fechaProximaAccion: '2026-01-14',
+    ownerVentas: 'Matías', tags: ['ecommerce', 'multirubro'],
+    interacciones: [
+      { id: 'INT-006-1', tipo: 'nota', fecha: '2025-12-28', descripcion: 'Consulta vía web sobre precios mayoristas.', usuario: 'Sistema' },
+    ],
+    fechaCreacion: '2025-12-28'
+  },
+  {
+    id: 'CRM-007', nombre: 'Pablo Gómez', empresa: 'TecnoPlus Tucumán', cargo: 'Compras',
+    email: 'pgomez@tecnoplus.com.ar', telefono: '+54 381 555-2222', ciudad: 'Tucumán',
+    etapa: 'contactado', origen: 'llamada_fria', valorPotencial: 55000, probabilidad: 30,
+    ultimoContacto: '2026-01-04', proximaAccion: 'Enviar muestras', fechaProximaAccion: '2026-01-17',
+    ownerVentas: 'Matías', tags: ['electrónica', 'interior', 'tucumán'],
+    interacciones: [
+      { id: 'INT-007-1', tipo: 'llamada', fecha: '2026-01-04', descripcion: 'Llamada de prospección. Interés en accesorios móvil.', usuario: 'Matías' },
+    ],
+    fechaCreacion: '2026-01-04'
+  },
+  {
+    id: 'CRM-008', nombre: 'Verónica Torres', empresa: 'MascotasBA', cargo: 'Fundadora',
+    email: 'vero@mascotasba.com', telefono: '+54 11 6666-8888', ciudad: 'Buenos Aires',
+    etapa: 'propuesta', origen: 'web', valorPotencial: 38000, probabilidad: 60,
+    ultimoContacto: '2026-01-11', proximaAccion: 'Cerrar condiciones', fechaProximaAccion: '2026-01-15',
+    ownerVentas: 'Matías', tags: ['mascotas', 'ecommerce', 'premium'],
+    interacciones: [
+      { id: 'INT-008-1', tipo: 'whatsapp', fecha: '2026-01-11', descripcion: 'Discusión de descuentos por volumen.', usuario: 'Matías' },
+      { id: 'INT-008-2', tipo: 'email', fecha: '2026-01-07', descripcion: 'Propuesta formal enviada.', usuario: 'Matías' },
+      { id: 'INT-008-3', tipo: 'llamada', fecha: '2026-01-05', descripcion: 'Presentación de línea Pet Vogue.', usuario: 'Matías' },
+    ],
+    fechaCreacion: '2025-12-20'
+  },
+  {
+    id: 'CRM-009', nombre: 'Fernando Ruiz', empresa: 'Casa Smart', cargo: 'Director',
+    email: 'fruiz@casasmart.com.ar', telefono: '+54 11 2222-4444', ciudad: 'Buenos Aires',
+    etapa: 'negociacion', origen: 'referido', valorPotencial: 72000, probabilidad: 65,
+    ultimoContacto: '2026-01-09', proximaAccion: 'Revisar contrato', fechaProximaAccion: '2026-01-16',
+    ownerVentas: 'Matías', tags: ['smart home', 'instalador', 'b2b'],
+    interacciones: [
+      { id: 'INT-009-1', tipo: 'reunion', fecha: '2026-01-09', descripcion: 'Reunión para definir términos del acuerdo.', usuario: 'Matías' },
+      { id: 'INT-009-2', tipo: 'email', fecha: '2026-01-06', descripcion: 'Envío de propuesta y condiciones.', usuario: 'Matías' },
+    ],
+    fechaCreacion: '2025-12-18'
+  },
+  {
+    id: 'CRM-010', nombre: 'Silvia Méndez', empresa: 'Toys World', cargo: 'Gerente Compras',
+    email: 'smendez@toysworld.com.ar', telefono: '+54 11 7777-3333', ciudad: 'Buenos Aires',
+    etapa: 'ganado', origen: 'feria', valorPotencial: 68000, probabilidad: 100,
+    ultimoContacto: '2026-01-05', ownerVentas: 'Matías', tags: ['juguetes', 'muñecas', 'cliente'],
+    interacciones: [
+      { id: 'INT-010-1', tipo: 'reunion', fecha: '2026-01-05', descripcion: 'Pedido confirmado. Muñecas Colección 2025.', usuario: 'Matías' },
+      { id: 'INT-010-2', tipo: 'llamada', fecha: '2025-12-22', descripcion: 'Cierre de negociación.', usuario: 'Matías' },
+    ],
+    fechaCreacion: '2025-11-20'
+  },
+  {
+    id: 'CRM-011', nombre: 'Gustavo Peralta', empresa: 'Import Norte', cargo: 'Socio',
+    email: 'gperalta@importnorte.com.ar', telefono: '+54 387 444-1111', ciudad: 'Salta',
+    etapa: 'lead', origen: 'web', valorPotencial: 45000, probabilidad: 10,
+    ultimoContacto: '2026-01-01', proximaAccion: 'Primer contacto telefónico', fechaProximaAccion: '2026-01-15',
+    ownerVentas: 'Matías', tags: ['multirubro', 'interior', 'salta'],
+    interacciones: [],
+    fechaCreacion: '2026-01-01',
+    notas: 'Solicitó información vía formulario web'
+  },
+  {
+    id: 'CRM-012', nombre: 'María José Paz', empresa: 'Deco Smart Living', cargo: 'Compradora',
+    email: 'mjpaz@decosmart.com.ar', telefono: '+54 11 5555-6666', ciudad: 'Buenos Aires',
+    etapa: 'contactado', origen: 'linkedin', valorPotencial: 32000, probabilidad: 25,
+    ultimoContacto: '2026-01-08', proximaAccion: 'Agendar demo productos', fechaProximaAccion: '2026-01-18',
+    ownerVentas: 'Matías', tags: ['smart home', 'decoración', 'retail'],
+    interacciones: [
+      { id: 'INT-012-1', tipo: 'email', fecha: '2026-01-08', descripcion: 'Respuesta a consulta LinkedIn. Envío de info.', usuario: 'Matías' },
+    ],
+    fechaCreacion: '2026-01-07'
+  }
+];
 
 // ══════════════════════════════════════════════════════════════════════════════
 // OPERACIONES - FECHAS ACTUALIZADAS A 2025-2026
