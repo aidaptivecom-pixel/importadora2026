@@ -79,6 +79,8 @@ import AvatarDigitalPage from './AvatarDigitalPage';
 import AnalyticsPage from './AnalyticsPage';
 import IntegracionesPage from './IntegracionesPage';
 import CRMPage from './CRMPage';
+import FacturacionPage from './FacturacionPage';
+import CobranzasPage from './CobranzasPage';
 import { exportToExcel, exportToCSV, formatEmbarquesForExport, formatInventarioForExport, formatMayoristasForExport, formatProveedoresForExport, formatOperacionesForExport } from '../utils/exportUtils';
 
 interface DashboardContentProps {
@@ -159,6 +161,10 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ currentPage, onNavi
       return <IntegracionesPage />;
     case 'crm':
       return <CRMPage />;
+    case 'facturacion':
+      return <FacturacionPage />;
+    case 'cobranzas':
+      return <CobranzasPage />;
     default:
       return <PlaceholderPage pageName={currentPage} />;
   }
