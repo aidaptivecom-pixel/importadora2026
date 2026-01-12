@@ -31,6 +31,8 @@ export type PageType =
   | 'reportes'
   | 'facturacion'
   | 'pagos'
+  // Inversores
+  | 'inversores'
   // Config
   | 'settings'
   | 'integraciones';
@@ -72,6 +74,7 @@ const App: React.FC = () => {
       reportes: 'Reportes',
       facturacion: 'Facturación',
       pagos: 'Pagos',
+      inversores: 'Dashboard Inversores',
       settings: 'Configuración',
       integraciones: 'Integraciones'
     };
@@ -102,6 +105,7 @@ const App: React.FC = () => {
       reportes: 'Finanzas',
       facturacion: 'Finanzas',
       pagos: 'Finanzas',
+      inversores: 'Inversores',
       settings: 'Configuración',
       integraciones: 'Configuración'
     };
