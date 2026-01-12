@@ -74,6 +74,10 @@ import { KPIS, REVENUE_DATA, RECENT_SHIPMENTS, CATEGORIES, DONUT_DATA, CLIENTES_
 import { PageType } from '../App';
 import { Operacion, EtapaOperacion } from '../types';
 import OperacionDetallePage from './OperacionDetallePage';
+import InversoresPage from './InversoresPage';
+import AvatarDigitalPage from './AvatarDigitalPage';
+import AnalyticsPage from './AnalyticsPage';
+import IntegracionesPage from './IntegracionesPage';
 import { exportToExcel, exportToCSV, formatEmbarquesForExport, formatInventarioForExport, formatMayoristasForExport, formatProveedoresForExport, formatOperacionesForExport } from '../utils/exportUtils';
 
 interface DashboardContentProps {
@@ -144,6 +148,14 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ currentPage, onNavi
       return <ProveedoresPage />;
     case 'inventario':
       return <InventarioPage />;
+    case 'inversores':
+      return <InversoresPage />;
+    case 'avatar':
+      return <AvatarDigitalPage />;
+    case 'analytics':
+      return <AnalyticsPage />;
+    case 'integraciones':
+      return <IntegracionesPage />;
     default:
       return <PlaceholderPage pageName={currentPage} />;
   }
