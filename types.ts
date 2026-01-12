@@ -212,3 +212,51 @@ export interface CajaBreakdown {
   montoUSD: number;
   color: string;
 }
+
+// ============ CRM (FASE 3) ============
+
+export type EtapaCRM = 'lead' | 'contactado' | 'propuesta' | 'negociacion' | 'ganado' | 'perdido';
+
+export type OrigenLead = 'referido' | 'web' | 'feria' | 'linkedin' | 'llamada_fria' | 'ecommerce' | 'otro';
+
+export interface InteraccionCRM {
+  id: string;
+  tipo: 'llamada' | 'email' | 'reunion' | 'whatsapp' | 'visita' | 'nota';
+  fecha: string;
+  descripcion: string;
+  usuario: string;
+}
+
+export interface ContactoCRM {
+  id: string;
+  nombre: string;
+  empresa: string;
+  cargo: string;
+  email: string;
+  telefono: string;
+  ciudad: string;
+  etapa: EtapaCRM;
+  origen: OrigenLead;
+  valorPotencial: number;
+  probabilidad: number; // 0-100
+  ultimoContacto: string;
+  proximaAccion?: string;
+  fechaProximaAccion?: string;
+  ownerVentas: string;
+  tags: string[];
+  interacciones: InteraccionCRM[];
+  fechaCreacion: string;
+  notas?: string;
+}
+
+export interface OportunidadCRM {
+  id: string;
+  contactoId: string;
+  titulo: string;
+  valorUSD: number;
+  etapa: EtapaCRM;
+  probabilidad: number;
+  fechaCierre: string;
+  productos: string[];
+  notas: string;
+}
