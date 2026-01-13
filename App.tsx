@@ -170,6 +170,7 @@ const App: React.FC = () => {
             currentPage={currentPage} 
             pageTitle={getPageTitle()} 
             breadcrumb={getBreadcrumb()}
+            onNavigate={handleNavigate}
           />
           
           <main className="flex-1 p-8 overflow-y-auto">
