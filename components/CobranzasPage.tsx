@@ -24,9 +24,12 @@ import {
   Send,
   History,
   User,
-  Bell
+  Bell,
+  FileSpreadsheet,
+  Table
 } from 'lucide-react';
 import EmptyState from './EmptyState';
+import { exportToCSV, exportToExcel, generateFilename } from '../utils/exportUtils';
 
 // Types
 type EstadoCobranza = 'al_dia' | 'por_vencer' | 'vencido' | 'en_gestion' | 'incobrable' | 'cobrado';
@@ -241,17 +244,17 @@ const ExportDropdown: React.FC<{ onExportExcel: () => void; onExportCSV: () => v
   return (
     <div className="relative">
       <button onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-2 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 rounded-lg text-sm font-medium text-emerald-700 transition-colors">
-        <Download size={16} />Exportar<ChevronDown size={14} />
+        <Download size={16} />Exportar<ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-slate-100 py-1 z-20">
-            <button onClick={() => { onExportExcel(); setIsOpen(false); }} className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-              <FileText size={14} className="text-green-600" />Excel (.xlsx)
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-20">
+            <button onClick={() => { onExportExcel(); setIsOpen(false); }} className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3">
+              <FileSpreadsheet size={16} className="text-emerald-600" />Exportar a Excel
             </button>
-            <button onClick={() => { onExportCSV(); setIsOpen(false); }} className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-              <FileText size={14} className="text-blue-600" />CSV (.csv)
+            <button onClick={() => { onExportCSV(); setIsOpen(false); }} className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3">
+              <Table size={16} className="text-blue-600" />Exportar a CSV
             </button>
           </div>
         </>
@@ -466,8 +469,68 @@ const CobranzasPage: React.FC = () => {
   const cobradoMes = CUENTAS_POR_COBRAR.filter(c => c.estado === 'cobrado').reduce((acc, c) => acc + c.montoOriginal, 0);
   const porVencer = CUENTAS_POR_COBRAR.filter(c => c.estado === 'por_vencer');
 
-  const handleExportExcel = () => console.log('Export Excel');
-  const handleExportCSV = () => console.log('Export CSV');
+  // Export functions
+  const exportColumns = [
+    { key: 'id', header: 'ID Cuenta' },
+    { key: 'facturaNumero', header: 'Número Factura' },
+    { key: 'cliente', header: 'Cliente' },
+    { key: 'cuit', header: 'CUIT' },
+    { key: 'categoria', header: 'Categoría' },
+    { key: 'telefono', header: 'Teléfono' },
+    { key: 'email', header: 'Email' },
+    { key: 'montoOriginal', header: 'Monto Original USD' },
+    { key: 'montoPendiente', header: 'Monto Pendiente USD' },
+    { key: 'fechaEmision', header: 'Fecha Emisión' },
+    { key: 'fechaVencimiento', header: 'Fecha Vencimiento' },
+    { key: 'diasVencido', header: 'Días Vencido' },
+    { key: 'estado', header: 'Estado' },
+    { key: 'proximaAccion', header: 'Próxima Acción' },
+    { key: 'fechaProximaAccion', header: 'Fecha Próxima Acción' },
+    { key: 'owner', header: 'Responsable' },
+    { key: 'cantidadGestiones', header: 'Gestiones Realizadas' }
+  ];
+
+  const getEstadoLabel = (estado: EstadoCobranza): string => {
+    const labels: Record<EstadoCobranza, string> = {
+      al_dia: 'Al día',
+      por_vencer: 'Por vencer',
+      vencido: 'Vencido',
+      en_gestion: 'En gestión',
+      incobrable: 'Incobrable',
+      cobrado: 'Cobrado'
+    };
+    return labels[estado];
+  };
+
+  const prepareExportData = () => {
+    return filteredCuentas.map(c => ({
+      id: c.id,
+      facturaNumero: c.facturaNumero,
+      cliente: c.cliente.nombre,
+      cuit: c.cliente.cuit,
+      categoria: c.cliente.categoria,
+      telefono: c.cliente.telefono,
+      email: c.cliente.email,
+      montoOriginal: c.montoOriginal,
+      montoPendiente: c.montoPendiente,
+      fechaEmision: c.fechaEmision,
+      fechaVencimiento: c.fechaVencimiento,
+      diasVencido: c.diasVencido > 0 ? c.diasVencido : 0,
+      estado: getEstadoLabel(c.estado),
+      proximaAccion: c.proximaAccion || '',
+      fechaProximaAccion: c.fechaProximaAccion || '',
+      owner: c.owner,
+      cantidadGestiones: c.gestiones.length
+    }));
+  };
+
+  const handleExportExcel = () => {
+    exportToExcel(prepareExportData(), exportColumns, generateFilename('cobranzas'), 'Cobranzas');
+  };
+
+  const handleExportCSV = () => {
+    exportToCSV(prepareExportData(), exportColumns, generateFilename('cobranzas'));
+  };
 
   return (
     <div className="space-y-6">
