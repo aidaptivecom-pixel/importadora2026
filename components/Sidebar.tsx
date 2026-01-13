@@ -124,29 +124,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
         <span className="font-bold text-lg text-slate-800 tracking-tight">Nexo Global</span>
       </motion.div>
 
-      {/* Team Selector */}
-      <motion.div 
-        className="px-4 py-4"
-        variants={itemVariants}
-      >
-        <motion.button 
-          className="w-full flex items-center justify-between px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-lg transition-colors"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <div className="flex items-center">
-            <div className="w-6 h-6 rounded bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold mr-2">
-              NG
-            </div>
-            <span className="text-sm font-medium text-slate-700">Import Ops</span>
-          </div>
-          <ChevronDown size={14} className="text-slate-400" />
-        </motion.button>
-      </motion.div>
-
       {/* Menu Area */}
       <motion.div 
-        className="flex-1 overflow-y-auto px-4 py-2 space-y-6 custom-scrollbar"
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-6 custom-scrollbar"
         variants={sidebarVariants}
       >
         
@@ -537,12 +517,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
           whileHover={{ scale: 1.02, x: 4 }}
           whileTap={{ scale: 0.98 }}
         >
-          <motion.img 
-            src="https://i.pravatar.cc/32?img=12" 
-            alt="Admin" 
-            className="w-8 h-8 rounded-full border border-slate-200"
+          <motion.div 
+            className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm"
             whileHover={{ scale: 1.1 }}
-          />
+          >
+            MF
+          </motion.div>
           <div className="ml-3 text-left flex-1">
             <p className="text-sm font-medium text-slate-700">Matías Admin</p>
             <p className="text-xs text-slate-400">CEO</p>
