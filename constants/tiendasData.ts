@@ -18,7 +18,7 @@ export interface PedidoTienda {
   tracking?: string;
 }
 
-export const PEDIDOS_TIENDA: Record<string, PedidoTienda[]> = {
+export const PEDIDOS_TIENDA: Record&lt;string, PedidoTienda[]&gt; = {
   'pet-vogue': [
     { id: 'PV-001234', fecha: '2026-01-13', cliente: 'María González', email: 'maria.g@email.com', productos: [{ nombre: 'Cama Ortopédica Premium L', cantidad: 1, precio: 89500 }, { nombre: 'Comedero Inteligente WiFi', cantidad: 1, precio: 45000 }], total: 134500, estado: 'pendiente', metodoPago: 'MercadoPago', canal: 'MercadoLibre', direccion: 'Av. Corrientes 1234, CABA' },
     { id: 'PV-001233', fecha: '2026-01-13', cliente: 'Carlos Rodríguez', email: 'carlos.r@email.com', productos: [{ nombre: 'Arnés Antitirones M', cantidad: 2, precio: 15000 }], total: 30000, estado: 'procesando', metodoPago: 'Tarjeta', canal: 'Web', direccion: 'Libertador 5678, Vicente López' },
@@ -58,7 +58,7 @@ export interface ClienteTienda {
   nps?: number;
 }
 
-export const CLIENTES_TIENDA: Record<string, ClienteTienda[]> = {
+export const CLIENTES_TIENDA: Record&lt;string, ClienteTienda[]&gt; = {
   'pet-vogue': [
     { id: 'CLI-PV-001', nombre: 'María González', email: 'maria.g@email.com', telefono: '+54 11 5555-1234', fechaRegistro: '2024-03-15', totalCompras: 850000, cantidadCompras: 12, ultimaCompra: '2026-01-13', segmento: 'VIP', tags: ['Perro grande', 'Premium'], nps: 10 },
     { id: 'CLI-PV-002', nombre: 'Carlos Rodríguez', email: 'carlos.r@email.com', telefono: '+54 11 5555-2345', fechaRegistro: '2024-06-20', totalCompras: 420000, cantidadCompras: 8, ultimaCompra: '2026-01-13', segmento: 'Frecuente', tags: ['Gato', 'Grooming'], nps: 9 },
@@ -99,7 +99,7 @@ export interface ProductoInventarioTienda {
   estado: 'disponible' | 'stock_bajo' | 'sin_stock' | 'descontinuado';
 }
 
-export const INVENTARIO_TIENDA: Record<string, ProductoInventarioTienda[]> = {
+export const INVENTARIO_TIENDA: Record&lt;string, ProductoInventarioTienda[]&gt; = {
   'pet-vogue': [
     { id: 'INV-PV-001', sku: 'PV-CAM-ORT-L', nombre: 'Cama Ortopédica Premium L', categoria: 'Camas', stock: 12, stockMinimo: 5, stockReservado: 2, costoImportadora: 45000, precioVenta: 89500, margen: 49.7, ubicacion: 'A-1-01', ultimaReposicion: '2026-01-05', estado: 'disponible' },
     { id: 'INV-PV-002', sku: 'PV-COM-WIFI', nombre: 'Comedero Inteligente WiFi', categoria: 'Alimentación', stock: 8, stockMinimo: 8, stockReservado: 1, costoImportadora: 22000, precioVenta: 45000, margen: 51.1, ubicacion: 'A-2-03', ultimaReposicion: '2026-01-02', estado: 'stock_bajo' },
@@ -142,7 +142,7 @@ export interface FinanzasTienda {
   proximosPagos: { fecha: string; monto: number; concepto: string }[];
 }
 
-export const FINANZAS_TIENDA: Record<string, FinanzasTienda> = {
+export const FINANZAS_TIENDA: Record&lt;string, FinanzasTienda&gt; = {
   'pet-vogue': {
     tiendaId: 'pet-vogue',
     mes: '2026-01',
@@ -242,7 +242,7 @@ export interface CasoPostventa {
   csat?: number;
 }
 
-export const CASOS_POSTVENTA: Record<string, CasoPostventa[]> = {
+export const CASOS_POSTVENTA: Record&lt;string, CasoPostventa[]&gt; = {
   'pet-vogue': [
     { id: 'PV-POST-001', fecha: '2026-01-12', pedidoId: 'PV-001220', cliente: 'Juan Méndez', tipo: 'devolucion', producto: 'Cama Ortopédica Premium M', motivo: 'Talla incorrecta', estado: 'en_proceso', prioridad: 'media', asignado: 'Agente AI' },
     { id: 'PV-POST-002', fecha: '2026-01-11', pedidoId: 'PV-001198', cliente: 'Sofía Ruiz', tipo: 'garantia', producto: 'Comedero Inteligente WiFi', motivo: 'Falla en sensor', estado: 'abierto', prioridad: 'alta', asignado: 'Soporte Humano' },
@@ -272,7 +272,7 @@ export interface ContenidoMarketing {
   asignadoA: string;
 }
 
-export const MARKETING_TIENDA: Record<string, ContenidoMarketing[]> = {
+export const MARKETING_TIENDA: Record&lt;string, ContenidoMarketing[]&gt; = {
   'pet-vogue': [
     { id: 'MKT-PV-001', fecha: '2026-01-13', tipo: 'post', plataforma: 'Instagram', titulo: 'Producto destacado: Cama Ortopédica', estado: 'publicado', engagement: { likes: 234, comments: 18, shares: 12, reach: 4500 }, asignadoA: 'Avatar Emma' },
     { id: 'MKT-PV-002', fecha: '2026-01-14', tipo: 'reel', plataforma: 'Instagram', titulo: 'Tutorial: Uso del comedero WiFi', estado: 'programado', asignadoA: 'Avatar Emma' },
@@ -305,7 +305,7 @@ export interface AgenteTienda {
   ultimaActualizacion: string;
 }
 
-export const AGENTES_TIENDA: Record<string, AgenteTienda[]> = {
+export const AGENTES_TIENDA: Record&lt;string, AgenteTienda[]&gt; = {
   'pet-vogue': [
     { id: 'AG-PV-VEN', nombre: 'Luna Ventas', tipo: 'ventas', estado: 'online', conversacionesHoy: 45, resolucionAutomatica: 92, tiempoRespuestaPromedio: 8, satisfaccion: 4.8, escalaciones: 4, ultimaActualizacion: '2026-01-13T10:30:00' },
     { id: 'AG-PV-SOP', nombre: 'Luna Soporte', tipo: 'soporte', estado: 'online', conversacionesHoy: 28, resolucionAutomatica: 85, tiempoRespuestaPromedio: 15, satisfaccion: 4.6, escalaciones: 6, ultimaActualizacion: '2026-01-13T10:30:00' },
@@ -334,7 +334,7 @@ export interface SolicitudReposicion {
   notas?: string;
 }
 
-export const SOLICITUDES_REPOSICION: Record<string, SolicitudReposicion[]> = {
+export const SOLICITUDES_REPOSICION: Record&lt;string, SolicitudReposicion[]&gt; = {
   'pet-vogue': [
     { id: 'SOL-PV-001', fecha: '2026-01-13', productos: [{ sku: 'PV-COL-GPS', nombre: 'Collar GPS Tracker', cantidad: 10, urgencia: 'urgente' }, { sku: 'PV-KIT-GRO', nombre: 'Kit Grooming Profesional', cantidad: 8, urgencia: 'normal' }], estado: 'pendiente', montoEstimado: 700000 },
     { id: 'SOL-PV-002', fecha: '2026-01-10', productos: [{ sku: 'PV-COM-WIFI', nombre: 'Comedero Inteligente WiFi', cantidad: 15, urgencia: 'normal' }], estado: 'en_preparacion', montoEstimado: 330000, fechaEstimadaEntrega: '2026-01-16' },
@@ -348,6 +348,17 @@ export const SOLICITUDES_REPOSICION: Record<string, SolicitudReposicion[]> = {
 };
 
 // ============ INBOX UNIFICADO MULTICANAL ============
+export interface MensajeChat {
+  id: string;
+  tipo: 'entrante' | 'saliente';
+  contenido: string;
+  fecha: string;
+  hora: string;
+  autor: string;
+  autorTipo: 'cliente' | 'agente_ai' | 'humano';
+  leido: boolean;
+}
+
 export interface MensajeInbox {
   id: string;
   conversacionId: string;
@@ -368,25 +379,12 @@ export interface MensajeInbox {
   asignado: 'Agente AI' | 'Soporte Humano' | 'Sin asignar';
   etiquetas: string[];
   mensajesSinLeer: number;
-  tiempoEspera?: number; // minutos
+  tiempoEspera?: number;
   pedidoRelacionado?: string;
   sentimiento?: 'positivo' | 'neutral' | 'negativo';
 }
 
-export interface ConversacionDetalle {
-  id: string;
-  mensajes: {
-    id: string;
-    tipo: 'entrante' | 'saliente';
-    contenido: string;
-    fecha: string;
-    hora: string;
-    autor: string;
-    leido: boolean;
-  }[];
-}
-
-export const INBOX_TIENDA: Record<string, MensajeInbox[]> = {
+export const INBOX_TIENDA: Record&lt;string, MensajeInbox[]&gt; = {
   'pet-vogue': [
     {
       id: 'INB-PV-001',
@@ -705,6 +703,166 @@ export const INBOX_TIENDA: Record<string, MensajeInbox[]> = {
   ]
 };
 
+// ============ HISTORIAL DE CONVERSACIONES ============
+export const CONVERSACIONES_CHAT: Record&lt;string, MensajeChat[]&gt; = {
+  // Pet Vogue - María González (consulta stock GPS)
+  'CONV-PV-001': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola! Quería consultar si tienen stock del collar GPS en color negro. Gracias!', fecha: '2026-01-13', hora: '10:45', autor: 'María González', autorTipo: 'cliente', leido: true }
+  ],
+  
+  // Pet Vogue - Luciana_pets (envíos zona sur)
+  'CONV-PV-002': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola! Me encantó la cama que compraron mis amigos para su golden!', fecha: '2026-01-13', hora: '10:15', autor: 'Luciana_pets', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola Luciana! 🐕 ¡Qué bueno que te gustó! Es una de nuestras camas más populares. La Cama Ortopédica Premium es perfecta para razas grandes como el Golden. ¿En qué puedo ayudarte hoy?', fecha: '2026-01-13', hora: '10:16', autor: 'Luna Ventas', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'Envían a zona sur? Estoy en Quilmes', fecha: '2026-01-13', hora: '10:28', autor: 'Luciana_pets', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-004', tipo: 'saliente', contenido: '¡Sí, por supuesto! Hacemos envíos a todo el país 📦 Para Quilmes el envío sale $3.500 y llega en 2-3 días hábiles. También tenés la opción de retiro gratis en nuestro showroom de CABA (Palermo). ¿Querés que te arme un presupuesto con la cama?', fecha: '2026-01-13', hora: '10:29', autor: 'Luna Ventas', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-005', tipo: 'entrante', contenido: 'Me encantó la cama que compraron mis amigos para su golden! Envían a zona sur?', fecha: '2026-01-13', hora: '10:32', autor: 'Luciana_pets', autorTipo: 'cliente', leido: true }
+  ],
+  
+  // Pet Vogue - Carlos (MercadoLibre arnés)
+  'CONV-PV-003': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola, tengo una consulta sobre el arnés antitirones', fecha: '2026-01-13', hora: '09:45', autor: 'Carlos Rodríguez', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola Carlos! Gracias por tu consulta. El Arnés Antitirones es uno de nuestros productos más vendidos. ¿Qué necesitás saber?', fecha: '2026-01-13', hora: '09:46', autor: 'Luna Ventas', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'Sirve para un labrador de 30kg? Necesito saber antes de comprarlo', fecha: '2026-01-13', hora: '09:58', autor: 'Carlos Rodríguez', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-004', tipo: 'saliente', contenido: '¡Perfecto para tu labrador! 🐕 El talle M que estás viendo es ideal para perros de 20-35kg. El arnés tiene ajuste en 4 puntos para un calce perfecto. Además viene con garantía de 6 meses. ¿Querés que te lo reserve?', fecha: '2026-01-13', hora: '09:59', autor: 'Luna Ventas', autorTipo: 'agente_ai', leido: true }
+  ],
+  
+  // Pet Vogue - Ana (seguimiento pedido)
+  'CONV-PV-004': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola, quería saber el estado de mi pedido PV-001232', fecha: '2026-01-13', hora: '08:30', autor: 'Ana Martínez', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola Ana! 📦 Tu pedido PV-001232 ya fue despachado. Incluye el Kit Grooming Profesional y 3 Shampoos Orgánicos. El tracking es OCA-123456789. Podés seguirlo en https://oca.com.ar/tracking', fecha: '2026-01-13', hora: '08:31', autor: 'Luna Soporte', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'Genial! Y cuando llega aproximadamente?', fecha: '2026-01-13', hora: '08:45', autor: 'Ana Martínez', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-004', tipo: 'saliente', contenido: 'Según el tracking, la entrega estimada es mañana (14/01) entre las 9 y 18hs en tu domicilio de Quilmes. Te van a enviar un SMS cuando salga a reparto. ¿Necesitás algo más?', fecha: '2026-01-13', hora: '08:46', autor: 'Luna Soporte', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-005', tipo: 'entrante', contenido: 'Perfecto, gracias por la info! Quedo atenta al tracking.', fecha: '2026-01-13', hora: '09:15', autor: 'Ana Martínez', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-006', tipo: 'saliente', contenido: '¡De nada Ana! Cualquier consulta estamos acá. Que disfrutes tus productos 🐾✨', fecha: '2026-01-13', hora: '09:16', autor: 'Luna Soporte', autorTipo: 'agente_ai', leido: true }
+  ],
+  
+  // Pet Vogue - Roberto (cancelación ESCALADO)
+  'CONV-PV-005': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola necesito cancelar mi pedido', fecha: '2026-01-13', hora: '07:45', autor: 'Roberto Sánchez', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola Roberto! Lamento que quieras cancelar. ¿Podrías indicarme el número de pedido y el motivo? Así puedo ayudarte mejor.', fecha: '2026-01-13', hora: '07:46', autor: 'Luna Soporte', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'Es el PV-001229. Me equivoqué de producto', fecha: '2026-01-13', hora: '07:50', autor: 'Roberto Sánchez', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-004', tipo: 'saliente', contenido: 'Entiendo Roberto. Veo que tu pedido del Collar GPS ya está en preparación. Voy a consultar con el equipo si podemos detenerlo. Dame unos minutos por favor.', fecha: '2026-01-13', hora: '07:51', autor: 'Luna Soporte', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-005', tipo: 'entrante', contenido: 'Pero necesito cancelarlo YA. No quiero ese producto!!', fecha: '2026-01-13', hora: '08:05', autor: 'Roberto Sánchez', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-006', tipo: 'entrante', contenido: 'HOLA??? ALGUIEN ME RESPONDE??', fecha: '2026-01-13', hora: '08:15', autor: 'Roberto Sánchez', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-007', tipo: 'saliente', contenido: '⚠️ He escalado tu caso a un agente humano que te va a contactar en breve para resolver la cancelación. Disculpá la demora Roberto.', fecha: '2026-01-13', hora: '08:16', autor: 'Luna Soporte', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-008', tipo: 'entrante', contenido: 'Necesito cancelar mi pedido URGENTE. No me contestan!!', fecha: '2026-01-13', hora: '08:22', autor: 'Roberto Sánchez', autorTipo: 'cliente', leido: false }
+  ],
+  
+  // Pet Vogue - Visitante mayorista
+  'CONV-PV-006': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola! Tengo una guardería canina y me interesan sus productos', fecha: '2026-01-13', hora: '10:48', autor: 'Visitante Web', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola! 🐾 ¡Qué bueno! Trabajamos con varias guarderías y veterinarias. ¿Qué productos te interesan?', fecha: '2026-01-13', hora: '10:49', autor: 'Luna Ventas', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'Tienen descuento por cantidad? Quiero comprar 5 camas para mi guardería canina', fecha: '2026-01-13', hora: '10:52', autor: 'Visitante Web', autorTipo: 'cliente', leido: false }
+  ],
+  
+  // Pet Vogue - Diego feedback positivo
+  'CONV-PV-007': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola! Solo quería agradecerles', fecha: '2026-01-12', hora: '18:30', autor: 'Diego López', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola Diego! ¿Todo bien con tu pedido? 🐾', fecha: '2026-01-12', hora: '18:31', autor: 'Luna Soporte', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'Genial el servicio! Ya llegó mi transportadora. 10 puntos 👏', fecha: '2026-01-12', hora: '18:45', autor: 'Diego López', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-004', tipo: 'saliente', contenido: '¡Qué alegría Diego! 🎉 Nos encanta saber que todo llegó perfecto. Si tenés un minuto, ¿podrías dejarnos una reseña en MercadoLibre? Nos ayuda mucho. ¡Gracias por elegirnos!', fecha: '2026-01-12', hora: '18:46', autor: 'Luna Soporte', autorTipo: 'agente_ai', leido: true }
+  ],
+  
+  // Pet Vogue - Mariana (consulta gatos)
+  'CONV-PV-008': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola! Vi el comedero inteligente en su página', fecha: '2026-01-13', hora: '07:20', autor: 'Mariana B.', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola Mariana! Sí, el Comedero Inteligente WiFi es uno de nuestros productos estrella ⭐ ¿Tenés alguna consulta?', fecha: '2026-01-13', hora: '07:21', autor: 'Luna Ventas', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'El comedero sirve para gatos? O es solo para perros?', fecha: '2026-01-13', hora: '07:30', autor: 'Mariana B.', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-004', tipo: 'saliente', contenido: '¡Sirve para ambos! 🐱🐕 El comedero tiene capacidad de 4L y porciones programables desde 10g, ideal para gatos. Muchos clientes lo usan para sus michis. ¿Tu gato es de comer mucho o poco?', fecha: '2026-01-13', hora: '07:31', autor: 'Luna Ventas', autorTipo: 'agente_ai', leido: true }
+  ],
+
+  // CoreSmart - TechSoft cotización B2B
+  'CONV-CS-001': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Buenos días, somos de TechSoft SA', fecha: '2026-01-13', hora: '10:55', autor: 'TechSoft SA', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Buenos días! Bienvenidos de nuevo a CoreSmart 🏢 ¿En qué puedo ayudarlos hoy?', fecha: '2026-01-13', hora: '10:56', autor: 'Core Ventas', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'Necesitamos cotización para 20 Smart Hubs y 50 sensores. Es para un proyecto corporativo.', fecha: '2026-01-13', hora: '11:02', autor: 'TechSoft SA', autorTipo: 'cliente', leido: false }
+  ],
+  
+  // CoreSmart - Martín cámara
+  'CONV-CS-002': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola, consulta sobre la cámara 360', fecha: '2026-01-13', hora: '10:20', autor: 'Martín Aguirre', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola Martín! La Cámara IP 360° 4K es excelente para seguridad del hogar. ¿Qué te gustaría saber?', fecha: '2026-01-13', hora: '10:21', autor: 'Core Ventas', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'Tiene visión nocturna? Cuántos metros de alcance?', fecha: '2026-01-13', hora: '10:28', autor: 'Martín Aguirre', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-004', tipo: 'saliente', contenido: '¡Sí! Tiene visión nocturna infrarroja con alcance de 15 metros en total oscuridad 🌙 Durante el día graba en 4K real. También tiene detección de movimiento con alertas al celular. ¿La querés para interior o exterior?', fecha: '2026-01-13', hora: '10:29', autor: 'Core Ventas', autorTipo: 'agente_ai', leido: true }
+  ],
+  
+  // CoreSmart - Inmobiliaria soporte técnico ESCALADO
+  'CONV-CS-003': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Tenemos un problema con los timbres que compramos', fecha: '2026-01-13', hora: '09:30', autor: 'Inmobiliaria Norte', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: 'Buenos días. Lamento escuchar eso. ¿Podrían describir el problema? Tengo registrado su pedido CS-002152 de 8 timbres.', fecha: '2026-01-13', hora: '09:31', autor: 'Core Soporte', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: '3 de los 8 timbres instalados tienen delay en la notificación. Necesitamos solución urgente.', fecha: '2026-01-13', hora: '09:45', autor: 'Inmobiliaria Norte', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-004', tipo: 'saliente', contenido: 'Entiendo la urgencia. El delay puede deberse a la configuración de red. ¿Los timbres con problema están más lejos del router? Voy a escalar esto a soporte técnico especializado para una revisión remota.', fecha: '2026-01-13', hora: '09:46', autor: 'Core Soporte', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-005', tipo: 'saliente', contenido: '⚠️ He asignado un técnico para contactarlos. Les escribirá en los próximos 30 minutos para coordinar una revisión.', fecha: '2026-01-13', hora: '09:47', autor: 'Core Soporte', autorTipo: 'agente_ai', leido: true }
+  ],
+  
+  // CoreSmart - Visitante compatibilidad
+  'CONV-CS-004': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'La cerradura smart es compatible con Google Home?', fecha: '2026-01-13', hora: '10:55', autor: 'Visitante Web', autorTipo: 'cliente', leido: false }
+  ],
+  
+  // CoreSmart - Lucía feedback
+  'CONV-CS-005': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola! Quería contarles que ya instalé el kit', fecha: '2026-01-12', hora: '20:00', autor: 'Lucía Pereyra', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola Lucía! ¿Qué tal quedó? 💡', fecha: '2026-01-12', hora: '20:01', autor: 'Core Soporte', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'Mil gracias por el kit de iluminación! Quedó increíble mi depto 🙌', fecha: '2026-01-12', hora: '20:12', autor: 'Lucía Pereyra', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-004', tipo: 'saliente', contenido: '¡Nos alegra muchísimo! 🎉 Si querés, compartinos una foto para nuestras redes (con tu permiso). ¡Y cualquier duda sobre la app estamos acá!', fecha: '2026-01-12', hora: '20:13', autor: 'Core Soporte', autorTipo: 'agente_ai', leido: true }
+  ],
+  
+  // CoreSmart - Federico tutorial
+  'CONV-CS-006': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola, compré la cerradura la semana pasada', fecha: '2026-01-13', hora: '08:00', autor: 'Federico Torres', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola Federico! Sí, veo tu pedido CS-002153. ¿Todo bien con la instalación?', fecha: '2026-01-13', hora: '08:01', autor: 'Core Soporte', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'Si, ya está instalada. Pero tengo una duda', fecha: '2026-01-13', hora: '08:10', autor: 'Federico Torres', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-004', tipo: 'saliente', contenido: '¡Perfecto! Decime, ¿cuál es tu duda?', fecha: '2026-01-13', hora: '08:11', autor: 'Core Soporte', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-005', tipo: 'entrante', contenido: 'Cómo hago para agregar más huellas a la cerradura? El manual no es muy claro', fecha: '2026-01-13', hora: '08:15', autor: 'Federico Torres', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-006', tipo: 'saliente', contenido: '¡Claro! Es muy fácil: 1) Abrí la app SmartLock 2) Andá a Configuración > Huellas 3) Tocá "Agregar nueva" 4) Seguí las instrucciones en pantalla para escanear. Podés agregar hasta 100 huellas diferentes. ¿Te sale?', fecha: '2026-01-13', hora: '08:16', autor: 'Core Soporte', autorTipo: 'agente_ai', leido: true }
+  ],
+
+  // Sensuality - Cliente VIP San Valentín
+  'CONV-SN-001': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola! Ya se viene San Valentín 💕', fecha: '2026-01-13', hora: '10:30', autor: 'Cliente Premium #101', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola! 💜 ¡Sí, ya estamos preparando todo para esa fecha especial! Como cliente VIP vas a tener acceso anticipado a la colección. ¿Buscás algo en particular?', fecha: '2026-01-13', hora: '10:31', autor: 'Mía Ventas', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'Tienen novedades para San Valentín? Me interesa algo especial', fecha: '2026-01-13', hora: '10:38', autor: 'Cliente Premium #101', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-004', tipo: 'saliente', contenido: '¡Tenemos cosas hermosas! 🌹 Esta semana llega la Colección "Noche Especial" con sets de lencería edición limitada, kits de masajes con aceites premium, y velas aromáticas exclusivas. ¿Te mando fotos cuando llegue? También podemos armarte un pack personalizado.', fecha: '2026-01-13', hora: '10:39', autor: 'Mía Ventas', autorTipo: 'agente_ai', leido: true }
+  ],
+  
+  // Sensuality - Visitante envío discreto
+  'CONV-SN-002': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola, es la primera vez que compro en una tienda así', fecha: '2026-01-13', hora: '10:40', autor: 'Visitante Anónimo', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola! Bienvenido/a 💜 No te preocupes, estás en un espacio seguro y confidencial. ¿En qué puedo ayudarte?', fecha: '2026-01-13', hora: '10:41', autor: 'Mía Ventas', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'El envío es discreto? No quiero que figure el nombre de la tienda en el paquete', fecha: '2026-01-13', hora: '10:48', autor: 'Visitante Anónimo', autorTipo: 'cliente', leido: false }
+  ],
+  
+  // Sensuality - Cliente aceites
+  'CONV-SN-003': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola! Me encantan sus aceites de masajes', fecha: '2026-01-13', hora: '09:15', autor: 'Cliente Premium #102', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola! 💜 ¡Qué bueno que te gustan! Son de los productos favoritos de nuestros clientes. ¿Ya probaste todos los aromas?', fecha: '2026-01-13', hora: '09:16', autor: 'Mía Ventas', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'Los aceites nuevos tienen aroma a lavanda? Es mi favorito', fecha: '2026-01-13', hora: '09:22', autor: 'Cliente Premium #102', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-004', tipo: 'saliente', contenido: '¡Sí! 🪻 La nueva línea tiene Lavanda Provenzal, es súper relajante. También llegó Vainilla & Canela (más sensual) y Rosa Damascena (romántico). El de lavanda viene en 250ml y 500ml. ¿Te reservo uno?', fecha: '2026-01-13', hora: '09:23', autor: 'Mía Ventas', autorTipo: 'agente_ai', leido: true }
+  ],
+  
+  // Sensuality - Seguimiento pedido
+  'CONV-SN-004': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola, hice un pedido hace 2 días', fecha: '2026-01-13', hora: '08:45', autor: 'Cliente #4520', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola! 💜 Sí, veo tu pedido SN-003088. Está en proceso de preparación. ¿Tenés alguna consulta?', fecha: '2026-01-13', hora: '08:46', autor: 'Mía Soporte', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'Cuándo estiman que llegue? Necesito que sea antes del viernes.', fecha: '2026-01-13', hora: '08:55', autor: 'Cliente #4520', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-004', tipo: 'saliente', contenido: 'Tu pedido sale hoy y con envío express llegaría el jueves 15. ¿Te sirve? Si necesitás que llegue antes, tenemos la opción de envío en el día para CABA/GBA por un adicional de $2.500.', fecha: '2026-01-13', hora: '08:56', autor: 'Mía Soporte', autorTipo: 'agente_ai', leido: true }
+  ],
+  
+  // Sensuality - Pago confirmado
+  'CONV-SN-005': [
+    { id: 'MSG-001', tipo: 'entrante', contenido: 'Hola! Quiero comprar el Kit Romance Premium', fecha: '2026-01-13', hora: '07:15', autor: 'Cliente #4521', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-002', tipo: 'saliente', contenido: '¡Hola! 💜 Excelente elección. El Kit Romance Premium incluye aceites, velas aromáticas, pétalos de rosa y una guía de masajes. ¿Lo enviamos a la dirección de siempre?', fecha: '2026-01-13', hora: '07:16', autor: 'Mía Ventas', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-003', tipo: 'entrante', contenido: 'Si, mismo lugar. Cuánto sale con envío?', fecha: '2026-01-13', hora: '07:25', autor: 'Cliente #4521', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-004', tipo: 'saliente', contenido: 'El kit está $125.000 + envío $3.500 a Palermo = $128.500 total. El pago puede ser por MercadoPago (link que te mando) o transferencia. Llega en 24-48hs en paquete totalmente discreto. ¿Procedemos?', fecha: '2026-01-13', hora: '07:26', autor: 'Mía Ventas', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-005', tipo: 'entrante', contenido: 'Dale, mandame el link', fecha: '2026-01-13', hora: '07:32', autor: 'Cliente #4521', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-006', tipo: 'saliente', contenido: '¡Listo! Acá tenés el link de pago: [link de MercadoPago]. Una vez acreditado te confirmo y sale hoy mismo. 💜', fecha: '2026-01-13', hora: '07:33', autor: 'Mía Ventas', autorTipo: 'agente_ai', leido: true },
+    { id: 'MSG-007', tipo: 'entrante', contenido: 'Perfecto, ya realicé el pago. Me avisan cuando despachen?', fecha: '2026-01-13', hora: '07:40', autor: 'Cliente #4521', autorTipo: 'cliente', leido: true },
+    { id: 'MSG-008', tipo: 'saliente', contenido: '✅ ¡Pago recibido! Tu pedido SN-003089 está confirmado. Te aviso apenas salga. ¡Gracias por tu compra! 💜🌹', fecha: '2026-01-13', hora: '07:41', autor: 'Mía Ventas', autorTipo: 'agente_ai', leido: true }
+  ]
+};
+
 // Estadísticas de Inbox por tienda
 export interface InboxStats {
   totalConversaciones: number;
@@ -712,13 +870,13 @@ export interface InboxStats {
   enProceso: number;
   esperandoCliente: number;
   cerradas: number;
-  tiempoPromedioRespuesta: number; // minutos
-  resolucionPrimerContacto: number; // porcentaje
+  tiempoPromedioRespuesta: number;
+  resolucionPrimerContacto: number;
   satisfaccionPromedio: number;
-  porCanal: Record<string, number>;
+  porCanal: Record&lt;string, number&gt;;
 }
 
-export const INBOX_STATS: Record<string, InboxStats> = {
+export const INBOX_STATS: Record&lt;string, InboxStats&gt; = {
   'pet-vogue': {
     totalConversaciones: 8,
     nuevas: 2,
