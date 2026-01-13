@@ -26,11 +26,14 @@ import {
   ArrowUpRight,
   CheckCircle2,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  FileSpreadsheet,
+  Table
 } from 'lucide-react';
 import { ContactoCRM, EtapaCRM } from '../types';
 import { CRM_CONTACTOS } from '../constants';
 import EmptyState from './EmptyState';
+import { exportToCSV, exportToExcel, generateFilename } from '../utils/exportUtils';
 
 // ============ EXPORT DROPDOWN ============
 const ExportDropdown: React.FC<{ onExportExcel: () => void; onExportCSV: () => void }> = ({ onExportExcel, onExportCSV }) => {
@@ -41,17 +44,17 @@ const ExportDropdown: React.FC<{ onExportExcel: () => void; onExportCSV: () => v
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 rounded-lg text-sm font-medium text-emerald-700 transition-colors"
       >
-        <Download size={16} />Exportar<ChevronDown size={14} />
+        <Download size={16} />Exportar<ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-slate-100 py-1 z-20">
-            <button onClick={() => { onExportExcel(); setIsOpen(false); }} className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-              <FileText size={14} className="text-green-600" />Excel (.xlsx)
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-20">
+            <button onClick={() => { onExportExcel(); setIsOpen(false); }} className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3">
+              <FileSpreadsheet size={16} className="text-emerald-600" />Exportar a Excel
             </button>
-            <button onClick={() => { onExportCSV(); setIsOpen(false); }} className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-              <FileText size={14} className="text-blue-600" />CSV (.csv)
+            <button onClick={() => { onExportCSV(); setIsOpen(false); }} className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3">
+              <Table size={16} className="text-blue-600" />Exportar a CSV
             </button>
           </div>
         </>
@@ -86,6 +89,15 @@ const CRMPage: React.FC = () => {
     otro: 'Otro'
   };
 
+  const etapaLabels: Record<EtapaCRM, string> = {
+    lead: 'Lead',
+    contactado: 'Contactado',
+    propuesta: 'Propuesta',
+    negociacion: 'Negociación',
+    ganado: 'Ganado',
+    perdido: 'Perdido'
+  };
+
   const filteredContactos = useMemo(() => {
     return CRM_CONTACTOS.filter(c => {
       const matchSearch = c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -109,8 +121,54 @@ const CRMPage: React.FC = () => {
   const clearFilters = () => { setSearchTerm(''); setFilterEtapa(''); setFilterOrigen(''); };
   const hasFilters = searchTerm || filterEtapa || filterOrigen;
 
-  const handleExportExcel = () => console.log('Export Excel');
-  const handleExportCSV = () => console.log('Export CSV');
+  // Export functions
+  const exportColumns = [
+    { key: 'nombre', header: 'Nombre' },
+    { key: 'cargo', header: 'Cargo' },
+    { key: 'empresa', header: 'Empresa' },
+    { key: 'email', header: 'Email' },
+    { key: 'telefono', header: 'Teléfono' },
+    { key: 'ciudad', header: 'Ciudad' },
+    { key: 'etapa', header: 'Etapa' },
+    { key: 'origen', header: 'Origen' },
+    { key: 'valorPotencial', header: 'Valor Potencial USD' },
+    { key: 'probabilidad', header: 'Probabilidad %' },
+    { key: 'valorPonderado', header: 'Valor Ponderado USD' },
+    { key: 'ultimoContacto', header: 'Último Contacto' },
+    { key: 'proximaAccion', header: 'Próxima Acción' },
+    { key: 'fechaProximaAccion', header: 'Fecha Próxima Acción' },
+    { key: 'tags', header: 'Tags' },
+    { key: 'interacciones', header: 'Cant. Interacciones' }
+  ];
+
+  const prepareExportData = () => {
+    return filteredContactos.map(c => ({
+      nombre: c.nombre,
+      cargo: c.cargo,
+      empresa: c.empresa,
+      email: c.email,
+      telefono: c.telefono,
+      ciudad: c.ciudad,
+      etapa: etapaLabels[c.etapa],
+      origen: origenLabels[c.origen] || c.origen,
+      valorPotencial: c.valorPotencial,
+      probabilidad: c.probabilidad,
+      valorPonderado: Math.round(c.valorPotencial * c.probabilidad / 100),
+      ultimoContacto: c.ultimoContacto,
+      proximaAccion: c.proximaAccion || '',
+      fechaProximaAccion: c.fechaProximaAccion || '',
+      tags: c.tags.join(', '),
+      interacciones: c.interacciones.length
+    }));
+  };
+
+  const handleExportExcel = () => {
+    exportToExcel(prepareExportData(), exportColumns, generateFilename('crm_contactos'), 'Contactos');
+  };
+
+  const handleExportCSV = () => {
+    exportToCSV(prepareExportData(), exportColumns, generateFilename('crm_contactos'));
+  };
 
   // Determinar tipo de empty state
   const getEmptyStateType = () => {
