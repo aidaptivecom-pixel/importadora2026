@@ -21,6 +21,7 @@ import {
   ArrowUpRight,
   Receipt
 } from 'lucide-react';
+import EmptyState from './EmptyState';
 
 // Types
 type EstadoFactura = 'borrador' | 'enviada' | 'pagada' | 'vencida' | 'anulada';
@@ -367,6 +368,13 @@ const FacturacionPage: React.FC = () => {
   const clearFilters = () => { setSearchTerm(''); setFilterEstado(''); setFilterTipo(''); };
   const hasFilters = searchTerm || filterEstado || filterTipo;
 
+  // Determinar tipo de empty state
+  const getEmptyStateType = () => {
+    if (searchTerm) return 'search';
+    if (filterEstado || filterTipo) return 'filter';
+    return 'documents';
+  };
+
   // KPIs
   const totalFacturado = FACTURAS.filter(f => f.estado !== 'anulada').reduce((acc, f) => acc + f.total, 0);
   const facturasVencidas = FACTURAS.filter(f => f.estado === 'vencida');
@@ -492,83 +500,92 @@ const FacturacionPage: React.FC = () => {
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              <tr>
-                <th className="p-4">Factura</th>
-                <th className="p-4">Cliente</th>
-                <th className="p-4">Fecha</th>
-                <th className="p-4">Vencimiento</th>
-                <th className="p-4 text-right">Total USD</th>
-                <th className="p-4">Estado</th>
-                <th className="p-4 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50 text-sm text-slate-700">
-              {filteredFacturas.map((factura) => {
-                const diasVencimiento = Math.ceil((new Date(factura.fechaVencimiento).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-                return (
-                  <tr key={factura.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <TipoBadge tipo={factura.tipo} />
-                        <div>
-                          <p className="font-medium text-slate-800">{factura.numero}</p>
-                          <p className="text-xs text-slate-400">{factura.id}</p>
+        {filteredFacturas.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <tr>
+                  <th className="p-4">Factura</th>
+                  <th className="p-4">Cliente</th>
+                  <th className="p-4">Fecha</th>
+                  <th className="p-4">Vencimiento</th>
+                  <th className="p-4 text-right">Total USD</th>
+                  <th className="p-4">Estado</th>
+                  <th className="p-4 text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50 text-sm text-slate-700">
+                {filteredFacturas.map((factura) => {
+                  const diasVencimiento = Math.ceil((new Date(factura.fechaVencimiento).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                  return (
+                    <tr key={factura.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <TipoBadge tipo={factura.tipo} />
+                          <div>
+                            <p className="font-medium text-slate-800">{factura.numero}</p>
+                            <p className="text-xs text-slate-400">{factura.id}</p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        <Building2 size={14} className="text-slate-400" />
-                        <div>
-                          <p className="font-medium text-slate-700">{factura.cliente.nombre}</p>
-                          <p className="text-xs text-slate-400">{factura.cliente.cuit}</p>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <Building2 size={14} className="text-slate-400" />
+                          <div>
+                            <p className="font-medium text-slate-700">{factura.cliente.nombre}</p>
+                            <p className="text-xs text-slate-400">{factura.cliente.cuit}</p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="p-4 text-slate-600">
-                      {new Date(factura.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: '2-digit' })}
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        <span className={`${factura.estado === 'vencida' ? 'text-red-600 font-medium' : diasVencimiento <= 3 && factura.estado === 'enviada' ? 'text-amber-600' : 'text-slate-600'}`}>
-                          {new Date(factura.fechaVencimiento).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: '2-digit' })}
-                        </span>
-                        {factura.estado === 'enviada' && diasVencimiento <= 3 && diasVencimiento > 0 && (
-                          <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">
-                            {diasVencimiento}d
+                      </td>
+                      <td className="p-4 text-slate-600">
+                        {new Date(factura.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: '2-digit' })}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <span className={`${factura.estado === 'vencida' ? 'text-red-600 font-medium' : diasVencimiento <= 3 && factura.estado === 'enviada' ? 'text-amber-600' : 'text-slate-600'}`}>
+                            {new Date(factura.fechaVencimiento).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: '2-digit' })}
                           </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-4 text-right font-semibold text-slate-800">
-                      ${factura.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="p-4">
-                      <EstadoBadge estado={factura.estado} />
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          onClick={() => setSelectedFactura(factura)}
-                          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                          title="Ver detalle"
-                        >
-                          <Eye size={16} className="text-slate-400" />
-                        </button>
-                        <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors" title="Más opciones">
-                          <MoreHorizontal size={16} className="text-slate-400" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                          {factura.estado === 'enviada' && diasVencimiento <= 3 && diasVencimiento > 0 && (
+                            <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">
+                              {diasVencimiento}d
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-4 text-right font-semibold text-slate-800">
+                        ${factura.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="p-4">
+                        <EstadoBadge estado={factura.estado} />
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => setSelectedFactura(factura)}
+                            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                            title="Ver detalle"
+                          >
+                            <Eye size={16} className="text-slate-400" />
+                          </button>
+                          <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors" title="Más opciones">
+                            <MoreHorizontal size={16} className="text-slate-400" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <EmptyState 
+            type={getEmptyStateType()}
+            title={searchTerm ? `Sin resultados para "${searchTerm}"` : undefined}
+            actionLabel="Limpiar filtros"
+            onAction={clearFilters}
+          />
+        )}
       </div>
 
       {/* Detail Modal */}
