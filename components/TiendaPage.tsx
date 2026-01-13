@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Store,
   TrendingUp,
@@ -24,7 +24,31 @@ import {
   FileText,
   Wallet,
   BarChart3,
-  Sparkles
+  Sparkles,
+  Search,
+  Filter,
+  Eye,
+  Mail,
+  Phone,
+  MapPin,
+  Truck,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  RefreshCcw,
+  Star,
+  Send,
+  Activity,
+  PieChart,
+  TrendingUp as Trending,
+  CreditCard,
+  Receipt,
+  ArrowRight,
+  Plus,
+  MoreHorizontal,
+  Download,
+  Upload,
+  Box
 } from 'lucide-react';
 import {
   AreaChart,
@@ -35,48 +59,73 @@ import {
   Tooltip,
   ResponsiveContainer,
   BarChart,
-  Bar
+  Bar,
+  PieChart as RechartsPie,
+  Pie,
+  Cell,
+  LineChart,
+  Line
 } from 'recharts';
 import { PageType } from '../App';
-import { TIENDAS_MINORISTAS, TIENDAS_ALERTAS, TIENDAS_METRICAS_DIARIAS, TIENDAS_PROYECCIONES, TiendaMinorista } from '../constants/tiendas';
+import { TiendaMinorista, TIENDAS_ALERTAS, TIENDAS_METRICAS_DIARIAS, TIENDAS_PROYECCIONES } from '../constants/tiendas';
+import {
+  PEDIDOS_TIENDA,
+  CLIENTES_TIENDA,
+  INVENTARIO_TIENDA,
+  FINANZAS_TIENDA,
+  CASOS_POSTVENTA,
+  MARKETING_TIENDA,
+  AGENTES_TIENDA,
+  SOLICITUDES_REPOSICION
+} from '../constants/tiendasData';
 
 interface TiendaPageProps {
-  tiendaSlug: string;
+  tienda: TiendaMinorista;
   onNavigate: (page: PageType) => void;
 }
 
-const TiendaPage: React.FC<TiendaPageProps> = ({ tiendaSlug, onNavigate }) => {
-  const tienda = TIENDAS_MINORISTAS.find(t => t.slug === tiendaSlug);
-  
-  if (!tienda) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <Store size={48} className="mx-auto text-slate-300 mb-4" />
-          <h3 className="text-lg font-semibold text-slate-800">Tienda no encontrada</h3>
-          <button onClick={() => onNavigate('tiendas-overview')} className="mt-4 text-blue-600 hover:text-blue-700">
-            Volver a Tiendas
-          </button>
-        </div>
-      </div>
-    );
-  }
+type TabType = 'dashboard' | 'ventas' | 'clientes' | 'inventario' | 'finanzas' | 'postventa' | 'marketing' | 'agentes';
 
+const TiendaPage: React.FC<TiendaPageProps> = ({ tienda, onNavigate }) => {
+  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  
   const metricas = TIENDAS_METRICAS_DIARIAS[tienda.id] || [];
   const alertas = TIENDAS_ALERTAS.filter(a => a.tiendaId === tienda.id);
   const proyeccion = TIENDAS_PROYECCIONES[tienda.id as keyof typeof TIENDAS_PROYECCIONES];
-
-  // Quick actions para la tienda
-  const quickActions = [
-    { icon: ShoppingCart, label: 'Ventas', color: 'bg-blue-50 text-blue-600' },
-    { icon: Users, label: 'Clientes', color: 'bg-purple-50 text-purple-600' },
-    { icon: Package, label: 'Inventario', color: 'bg-amber-50 text-amber-600' },
-    { icon: Wallet, label: 'Finanzas', color: 'bg-emerald-50 text-emerald-600' },
-    { icon: RotateCcw, label: 'Postventa', color: 'bg-red-50 text-red-600' },
-    { icon: Calendar, label: 'Marketing', color: 'bg-pink-50 text-pink-600' },
-    { icon: Bot, label: 'Agentes AI', color: 'bg-cyan-50 text-cyan-600' },
-    { icon: Settings, label: 'Config', color: 'bg-slate-100 text-slate-600' },
+  
+  const tabs: { id: TabType; label: string; icon: React.ElementType }[] = [
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { id: 'ventas', label: 'Ventas', icon: ShoppingCart },
+    { id: 'clientes', label: 'Clientes', icon: Users },
+    { id: 'inventario', label: 'Inventario', icon: Package },
+    { id: 'finanzas', label: 'Finanzas', icon: Wallet },
+    { id: 'postventa', label: 'Postventa', icon: RotateCcw },
+    { id: 'marketing', label: 'Marketing', icon: Sparkles },
+    { id: 'agentes', label: 'Agentes AI', icon: Bot },
   ];
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return <DashboardTab tienda={tienda} metricas={metricas} alertas={alertas} proyeccion={proyeccion} />;
+      case 'ventas':
+        return <VentasTab tienda={tienda} />;
+      case 'clientes':
+        return <ClientesTab tienda={tienda} />;
+      case 'inventario':
+        return <InventarioTab tienda={tienda} />;
+      case 'finanzas':
+        return <FinanzasTab tienda={tienda} />;
+      case 'postventa':
+        return <PostventaTab tienda={tienda} />;
+      case 'marketing':
+        return <MarketingTab tienda={tienda} />;
+      case 'agentes':
+        return <AgentesTab tienda={tienda} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -113,39 +162,68 @@ const TiendaPage: React.FC<TiendaPageProps> = ({ tiendaSlug, onNavigate }) => {
             </div>
           </div>
         </div>
+        
+        {/* Tabs de navegación */}
+        <div className="border-t border-slate-100 px-4">
+          <div className="flex items-center gap-1 overflow-x-auto">
+            {tabs.map(tab => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                    isActive 
+                      ? 'border-current text-slate-800' 
+                      : 'border-transparent text-slate-500 hover:text-slate-700'
+                  }`}
+                  style={isActive ? { color: tienda.color, borderColor: tienda.color } : {}}
+                >
+                  <Icon size={16} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
-      {/* KPIs de la Tienda */}
+      {/* Contenido del tab activo */}
+      {renderContent()}
+    </div>
+  );
+};
+
+// ============ DASHBOARD TAB ============
+const DashboardTab: React.FC<{ tienda: TiendaMinorista; metricas: any[]; alertas: any[]; proyeccion: any }> = ({ tienda, metricas, alertas, proyeccion }) => {
+  return (
+    <div className="space-y-6">
+      {/* KPIs */}
       <div className="grid grid-cols-6 gap-4">
         <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
           <p className="text-xs text-slate-500 mb-1">Ingresos Mes</p>
-          <p className="text-xl font-bold" style={{ color: tienda.color }}>
-            ${(tienda.ingresosMes / 1000000).toFixed(2)}M
-          </p>
+          <p className="text-xl font-bold" style={{ color: tienda.color }}>${(tienda.ingresosMes / 1000000).toFixed(2)}M</p>
           <p className={`text-xs flex items-center gap-1 mt-1 ${tienda.crecimientoMes > 0 ? 'text-green-600' : 'text-red-600'}`}>
             {tienda.crecimientoMes > 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
             {tienda.crecimientoMes > 0 ? '+' : ''}{tienda.crecimientoMes}%
           </p>
         </div>
-        
         <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
           <p className="text-xs text-slate-500 mb-1">Ventas Mes</p>
           <p className="text-xl font-bold text-slate-800">{tienda.ventasMes}</p>
           <p className="text-xs text-slate-400">pedidos completados</p>
         </div>
-        
         <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
           <p className="text-xs text-slate-500 mb-1">Ticket Promedio</p>
           <p className="text-xl font-bold text-slate-800">${tienda.ticketPromedio.toLocaleString()}</p>
           <p className="text-xs text-slate-400">por venta</p>
         </div>
-        
         <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
           <p className="text-xs text-slate-500 mb-1">Clientes</p>
           <p className="text-xl font-bold text-slate-800">{tienda.clientesActivos}</p>
           <p className="text-xs text-green-600">+{tienda.nuevosClientesMes} nuevos</p>
         </div>
-        
         <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
           <p className="text-xs text-slate-500 mb-1">Productos</p>
           <p className="text-xl font-bold text-slate-800">{tienda.productosActivos}</p>
@@ -153,7 +231,6 @@ const TiendaPage: React.FC<TiendaPageProps> = ({ tiendaSlug, onNavigate }) => {
             {tienda.stockCritico > 0 ? `${tienda.stockCritico} stock bajo` : '✓ Stock OK'}
           </p>
         </div>
-        
         <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
           <p className="text-xs text-slate-500 mb-1">Meta Mes</p>
           <p className="text-xl font-bold" style={{ color: proyeccion?.cumplimiento >= 100 ? '#10b981' : tienda.color }}>
@@ -163,35 +240,13 @@ const TiendaPage: React.FC<TiendaPageProps> = ({ tiendaSlug, onNavigate }) => {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
-        <div className="flex items-center justify-between">
-          {quickActions.map(action => (
-            <button
-              key={action.label}
-              className={`flex flex-col items-center gap-2 p-3 rounded-xl hover:shadow-sm transition-all ${action.color}`}
-            >
-              <action.icon size={20} />
-              <span className="text-xs font-medium">{action.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Gráficos y Alertas */}
+      {/* Gráficos */}
       <div className="grid grid-cols-3 gap-6">
-        {/* Tendencia de Ventas */}
         <div className="col-span-2 bg-white rounded-xl border border-slate-100 shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-lg font-semibold text-slate-800">Tendencia de Ingresos</h2>
               <p className="text-sm text-slate-500">Últimos 7 días</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500">Promedio:</span>
-              <span className="text-sm font-semibold" style={{ color: tienda.color }}>
-                ${(metricas.reduce((acc, m) => acc + m.ingresos, 0) / metricas.length / 1000).toFixed(0)}K/día
-              </span>
             </div>
           </div>
           <div className="h-[250px]">
@@ -204,154 +259,84 @@ const TiendaPage: React.FC<TiendaPageProps> = ({ tiendaSlug, onNavigate }) => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="fecha" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#94a3b8', fontSize: 12 }}
-                  tickFormatter={(v) => v.split('-')[2]}
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#94a3b8', fontSize: 12 }} 
-                  tickFormatter={(v) => `$${(v/1000).toFixed(0)}K`}
-                />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0' }}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, 'Ingresos']}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="ingresos" 
-                  stroke={tienda.color} 
-                  strokeWidth={3} 
-                  fillOpacity={1} 
-                  fill={`url(#color${tienda.slug})`} 
-                />
+                <XAxis dataKey="fecha" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => v.split('-')[2]} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => `$${(v/1000).toFixed(0)}K`} />
+                <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0' }} formatter={(value: number) => [`$${value.toLocaleString()}`, 'Ingresos']} />
+                <Area type="monotone" dataKey="ingresos" stroke={tienda.color} strokeWidth={3} fillOpacity={1} fill={`url(#color${tienda.slug})`} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Alertas y Estado */}
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-50 flex items-center justify-between" style={{ backgroundColor: tienda.colorSecundario }}>
+          <div className="p-4 border-b border-slate-50" style={{ backgroundColor: tienda.colorSecundario }}>
             <div className="flex items-center gap-2">
               <AlertTriangle size={18} style={{ color: tienda.color }} />
               <h2 className="font-semibold text-slate-800">Estado de la Tienda</h2>
             </div>
           </div>
-          <div className="p-4 space-y-3">
-            {/* Indicadores de estado */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50">
+          <div className="p-4 space-y-2">
+            {[
+              { icon: Package, label: 'Stock Crítico', value: tienda.stockCritico, bad: tienda.stockCritico > 0 },
+              { icon: MessageSquare, label: 'Tickets Abiertos', value: tienda.ticketsAbiertos, bad: tienda.ticketsAbiertos > 0 },
+              { icon: RotateCcw, label: 'Devoluciones', value: tienda.devolucionesPendientes, bad: tienda.devolucionesPendientes > 0 },
+              { icon: Shield, label: 'Garantías', value: tienda.garantiasPendientes, bad: tienda.garantiasPendientes > 0 },
+            ].map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-slate-50">
                 <div className="flex items-center gap-2">
-                  <Package size={14} className="text-slate-500" />
-                  <span className="text-sm text-slate-600">Stock Crítico</span>
+                  <item.icon size={14} className="text-slate-500" />
+                  <span className="text-sm text-slate-600">{item.label}</span>
                 </div>
-                <span className={`text-sm font-semibold ${tienda.stockCritico > 0 ? 'text-amber-600' : 'text-green-600'}`}>
-                  {tienda.stockCritico}
-                </span>
+                <span className={`text-sm font-semibold ${item.bad ? 'text-amber-600' : 'text-green-600'}`}>{item.value}</span>
               </div>
-              
-              <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50">
-                <div className="flex items-center gap-2">
-                  <MessageSquare size={14} className="text-slate-500" />
-                  <span className="text-sm text-slate-600">Tickets Abiertos</span>
-                </div>
-                <span className={`text-sm font-semibold ${tienda.ticketsAbiertos > 0 ? 'text-blue-600' : 'text-green-600'}`}>
-                  {tienda.ticketsAbiertos}
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50">
-                <div className="flex items-center gap-2">
-                  <RotateCcw size={14} className="text-slate-500" />
-                  <span className="text-sm text-slate-600">Devoluciones</span>
-                </div>
-                <span className={`text-sm font-semibold ${tienda.devolucionesPendientes > 0 ? 'text-purple-600' : 'text-green-600'}`}>
-                  {tienda.devolucionesPendientes}
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50">
-                <div className="flex items-center gap-2">
-                  <Shield size={14} className="text-slate-500" />
-                  <span className="text-sm text-slate-600">Garantías</span>
-                </div>
-                <span className={`text-sm font-semibold ${tienda.garantiasPendientes > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                  {tienda.garantiasPendientes}
-                </span>
-              </div>
-            </div>
-            
-            {/* Alertas */}
+            ))}
             {alertas.length > 0 && (
               <div className="border-t border-slate-100 pt-3 mt-3">
                 <p className="text-xs font-semibold text-slate-500 mb-2">ALERTAS ACTIVAS</p>
-                <div className="space-y-2">
-                  {alertas.slice(0, 3).map(alerta => (
-                    <div key={alerta.id} className="flex items-start gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full mt-1.5 ${alerta.prioridad === 'alta' ? 'bg-red-500' : 'bg-amber-500'}`} />
-                      <p className="text-xs text-slate-600">{alerta.mensaje}</p>
-                    </div>
-                  ))}
-                </div>
+                {alertas.slice(0, 3).map(alerta => (
+                  <div key={alerta.id} className="flex items-start gap-2 mb-1">
+                    <div className={`w-1.5 h-1.5 rounded-full mt-1.5 ${alerta.prioridad === 'alta' ? 'bg-red-500' : 'bg-amber-500'}`} />
+                    <p className="text-xs text-slate-600">{alerta.mensaje}</p>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Agentes AI y Relación Importadora */}
+      {/* Agentes AI y Cuenta Importadora */}
       <div className="grid grid-cols-2 gap-6">
-        {/* Agentes AI */}
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Bot size={20} className="text-cyan-500" />
               <h2 className="font-semibold text-slate-800">Agentes AI</h2>
             </div>
-            <span className="text-xs bg-cyan-50 text-cyan-700 px-2 py-1 rounded-full">
-              {tienda.agentesActivos} activos
-            </span>
+            <span className="text-xs bg-cyan-50 text-cyan-700 px-2 py-1 rounded-full">{tienda.agentesActivos} activos</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-100">
-              <div className="flex items-center gap-2 mb-2">
-                <MessageSquare size={16} className="text-cyan-600" />
-                <span className="text-sm font-medium text-slate-700">Agente Ventas</span>
+            {['Ventas', 'Soporte'].map((tipo, idx) => (
+              <div key={tipo} className={`p-4 rounded-xl ${idx === 0 ? 'bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-100' : 'bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100'}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  {idx === 0 ? <MessageSquare size={16} className="text-cyan-600" /> : <Shield size={16} className="text-purple-600" />}
+                  <span className="text-sm font-medium text-slate-700">Agente {tipo}</span>
+                </div>
+                <p className={`text-2xl font-bold ${idx === 0 ? 'text-cyan-700' : 'text-purple-700'}`}>{Math.floor(tienda.conversacionesHoy * (idx === 0 ? 0.6 : 0.4))}</p>
+                <p className="text-xs text-slate-500">conversaciones hoy</p>
+                <div className="mt-2 flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-xs text-green-600">Online</span>
+                </div>
               </div>
-              <p className="text-2xl font-bold text-cyan-700">{Math.floor(tienda.conversacionesHoy * 0.6)}</p>
-              <p className="text-xs text-slate-500">conversaciones hoy</p>
-              <div className="mt-2 flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs text-green-600">Online</span>
-              </div>
-            </div>
-            <div className="p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100">
-              <div className="flex items-center gap-2 mb-2">
-                <Shield size={16} className="text-purple-600" />
-                <span className="text-sm font-medium text-slate-700">Agente Soporte</span>
-              </div>
-              <p className="text-2xl font-bold text-purple-700">{Math.floor(tienda.conversacionesHoy * 0.4)}</p>
-              <p className="text-xs text-slate-500">conversaciones hoy</p>
-              <div className="mt-2 flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs text-green-600">Online</span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Relación con Importadora */}
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <DollarSign size={20} className="text-emerald-500" />
-              <h2 className="font-semibold text-slate-800">Cuenta con Importadora</h2>
-            </div>
+          <div className="flex items-center gap-2 mb-4">
+            <DollarSign size={20} className="text-emerald-500" />
+            <h2 className="font-semibold text-slate-800">Cuenta con Importadora</h2>
           </div>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="p-4 rounded-xl bg-emerald-50">
@@ -365,46 +350,819 @@ const TiendaPage: React.FC<TiendaPageProps> = ({ tiendaSlug, onNavigate }) => {
               </p>
             </div>
           </div>
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between text-sm mb-4">
             <span className="text-slate-500">Última compra:</span>
             <span className="font-medium text-slate-700">{tienda.ultimaCompra}</span>
           </div>
-          <button className="w-full mt-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          <button className="w-full py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
             Solicitar mercadería
           </button>
         </div>
       </div>
+    </div>
+  );
+};
 
-      {/* Plan de Marketing (heredado del central) */}
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Sparkles size={20} className="text-pink-500" />
-            <h2 className="font-semibold text-slate-800">Plan de Marketing (desde Central)</h2>
+// ============ VENTAS TAB ============
+const VentasTab: React.FC<{ tienda: TiendaMinorista }> = ({ tienda }) => {
+  const pedidos = PEDIDOS_TIENDA[tienda.slug] || [];
+  const [filtroEstado, setFiltroEstado] = useState<string>('');
+  
+  const pedidosFiltrados = filtroEstado ? pedidos.filter(p => p.estado === filtroEstado) : pedidos;
+  
+  const estadoColors: Record<string, string> = {
+    pendiente: 'bg-amber-50 text-amber-700',
+    procesando: 'bg-blue-50 text-blue-700',
+    enviado: 'bg-purple-50 text-purple-700',
+    entregado: 'bg-green-50 text-green-700',
+    cancelado: 'bg-red-50 text-red-700'
+  };
+  
+  const estadoIcons: Record<string, React.ElementType> = {
+    pendiente: Clock,
+    procesando: RefreshCcw,
+    enviado: Truck,
+    entregado: CheckCircle2,
+    cancelado: XCircle
+  };
+
+  const totalVentas = pedidos.filter(p => p.estado !== 'cancelado').reduce((acc, p) => acc + p.total, 0);
+  const pedidosPendientes = pedidos.filter(p => p.estado === 'pendiente').length;
+  const pedidosEnviados = pedidos.filter(p => p.estado === 'enviado').length;
+
+  return (
+    <div className="space-y-6">
+      {/* KPIs Ventas */}
+      <div className="grid grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Ventas del Día</p>
+          <p className="text-2xl font-bold" style={{ color: tienda.color }}>${(totalVentas / 1000).toFixed(0)}K</p>
+          <p className="text-xs text-green-600">+12% vs ayer</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Pedidos Hoy</p>
+          <p className="text-2xl font-bold text-slate-800">{pedidos.length}</p>
+          <p className="text-xs text-slate-400">pedidos recibidos</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Pendientes</p>
+          <p className="text-2xl font-bold text-amber-600">{pedidosPendientes}</p>
+          <p className="text-xs text-amber-600">requieren acción</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">En Tránsito</p>
+          <p className="text-2xl font-bold text-purple-600">{pedidosEnviados}</p>
+          <p className="text-xs text-slate-400">en camino</p>
+        </div>
+      </div>
+
+      {/* Filtros */}
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input type="text" placeholder="Buscar pedido..." className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm w-64" />
+            </div>
+            <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm">
+              <option value="">Todos los estados</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="procesando">Procesando</option>
+              <option value="enviado">Enviado</option>
+              <option value="entregado">Entregado</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
           </div>
-          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
-            Ver calendario completo <ChevronRight size={14} />
+          <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ backgroundColor: tienda.color }}>
+            <Plus size={16} />Nuevo Pedido
           </button>
         </div>
-        <div className="grid grid-cols-4 gap-4">
-          {['Lun 13', 'Mar 14', 'Mié 15', 'Jue 16'].map((dia, idx) => (
-            <div key={dia} className="p-3 rounded-lg border border-slate-100 hover:border-slate-200 transition-colors">
-              <p className="text-xs font-medium text-slate-500 mb-2">{dia}</p>
-              <div className="space-y-2">
-                <div className="p-2 rounded bg-pink-50">
-                  <p className="text-xs font-medium text-pink-700">📸 Post Instagram</p>
-                  <p className="text-[10px] text-slate-500">Producto destacado</p>
-                </div>
-                {idx % 2 === 0 && (
-                  <div className="p-2 rounded bg-blue-50">
-                    <p className="text-xs font-medium text-blue-700">🎬 Reel</p>
-                    <p className="text-[10px] text-slate-500">Tutorial uso</p>
+      </div>
+
+      {/* Lista de Pedidos */}
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+        <table className="w-full text-left">
+          <thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase">
+            <tr>
+              <th className="p-4">Pedido</th>
+              <th className="p-4">Cliente</th>
+              <th className="p-4">Productos</th>
+              <th className="p-4">Canal</th>
+              <th className="p-4 text-right">Total</th>
+              <th className="p-4">Estado</th>
+              <th className="p-4"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-50 text-sm">
+            {pedidosFiltrados.map(pedido => {
+              const Icon = estadoIcons[pedido.estado] || Clock;
+              return (
+                <tr key={pedido.id} className="hover:bg-slate-50 cursor-pointer">
+                  <td className="p-4">
+                    <p className="font-semibold" style={{ color: tienda.color }}>{pedido.id}</p>
+                    <p className="text-xs text-slate-400">{pedido.fecha}</p>
+                  </td>
+                  <td className="p-4">
+                    <p className="font-medium text-slate-800">{pedido.cliente}</p>
+                    <p className="text-xs text-slate-400">{pedido.email}</p>
+                  </td>
+                  <td className="p-4">
+                    <p className="text-slate-700">{pedido.productos.length} producto(s)</p>
+                    <p className="text-xs text-slate-400 truncate max-w-[200px]">{pedido.productos.map(p => p.nombre).join(', ')}</p>
+                  </td>
+                  <td className="p-4">
+                    <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">{pedido.canal}</span>
+                  </td>
+                  <td className="p-4 text-right font-semibold text-slate-800">${pedido.total.toLocaleString()}</td>
+                  <td className="p-4">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${estadoColors[pedido.estado]}`}>
+                      <Icon size={12} />
+                      {pedido.estado.charAt(0).toUpperCase() + pedido.estado.slice(1)}
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    <button className="text-slate-400 hover:text-slate-600"><MoreHorizontal size={16} /></button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+// ============ CLIENTES TAB ============
+const ClientesTab: React.FC<{ tienda: TiendaMinorista }> = ({ tienda }) => {
+  const clientes = CLIENTES_TIENDA[tienda.slug] || [];
+  
+  const segmentoColors: Record<string, string> = {
+    VIP: 'bg-purple-50 text-purple-700 border-purple-200',
+    Frecuente: 'bg-blue-50 text-blue-700 border-blue-200',
+    Ocasional: 'bg-slate-50 text-slate-600 border-slate-200',
+    Nuevo: 'bg-green-50 text-green-700 border-green-200',
+    Inactivo: 'bg-red-50 text-red-600 border-red-200'
+  };
+
+  const totalClientes = clientes.length;
+  const clientesVIP = clientes.filter(c => c.segmento === 'VIP').length;
+  const clientesNuevos = clientes.filter(c => c.segmento === 'Nuevo').length;
+  const npsPromedio = clientes.filter(c => c.nps).reduce((acc, c) => acc + (c.nps || 0), 0) / clientes.filter(c => c.nps).length;
+
+  return (
+    <div className="space-y-6">
+      {/* KPIs */}
+      <div className="grid grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Total Clientes</p>
+          <p className="text-2xl font-bold" style={{ color: tienda.color }}>{totalClientes}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Clientes VIP</p>
+          <p className="text-2xl font-bold text-purple-600">{clientesVIP}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Nuevos (Mes)</p>
+          <p className="text-2xl font-bold text-green-600">{clientesNuevos}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">NPS Promedio</p>
+          <p className="text-2xl font-bold text-emerald-600">{npsPromedio.toFixed(1)}</p>
+        </div>
+      </div>
+
+      {/* Lista de Clientes */}
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-slate-50 flex items-center justify-between">
+          <h3 className="font-semibold text-slate-800">Base de Clientes</h3>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input type="text" placeholder="Buscar cliente..." className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm w-64" />
+            </div>
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ backgroundColor: tienda.color }}>
+              <Plus size={16} />Agregar
+            </button>
+          </div>
+        </div>
+        <table className="w-full text-left">
+          <thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase">
+            <tr>
+              <th className="p-4">Cliente</th>
+              <th className="p-4">Segmento</th>
+              <th className="p-4">Compras</th>
+              <th className="p-4 text-right">Total Gastado</th>
+              <th className="p-4">Última Compra</th>
+              <th className="p-4">NPS</th>
+              <th className="p-4">Tags</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-50 text-sm">
+            {clientes.map(cliente => (
+              <tr key={cliente.id} className="hover:bg-slate-50 cursor-pointer">
+                <td className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: tienda.colorSecundario, color: tienda.color }}>
+                      {cliente.nombre.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-800">{cliente.nombre}</p>
+                      <p className="text-xs text-slate-400">{cliente.email}</p>
+                    </div>
                   </div>
-                )}
+                </td>
+                <td className="p-4">
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${segmentoColors[cliente.segmento]}`}>
+                    {cliente.segmento}
+                  </span>
+                </td>
+                <td className="p-4 text-slate-700">{cliente.cantidadCompras}</td>
+                <td className="p-4 text-right font-semibold text-slate-800">${cliente.totalCompras.toLocaleString()}</td>
+                <td className="p-4 text-slate-500">{cliente.ultimaCompra}</td>
+                <td className="p-4">
+                  {cliente.nps ? (
+                    <div className="flex items-center gap-1">
+                      <Star size={14} className="text-amber-400 fill-amber-400" />
+                      <span className="font-medium">{cliente.nps}</span>
+                    </div>
+                  ) : <span className="text-slate-300">—</span>}
+                </td>
+                <td className="p-4">
+                  <div className="flex flex-wrap gap-1">
+                    {cliente.tags.slice(0, 2).map(tag => (
+                      <span key={tag} className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{tag}</span>
+                    ))}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+// ============ INVENTARIO TAB ============
+const InventarioTab: React.FC<{ tienda: TiendaMinorista }> = ({ tienda }) => {
+  const inventario = INVENTARIO_TIENDA[tienda.slug] || [];
+  const solicitudes = SOLICITUDES_REPOSICION[tienda.slug] || [];
+  
+  const estadoColors: Record<string, string> = {
+    disponible: 'bg-green-50 text-green-700',
+    stock_bajo: 'bg-amber-50 text-amber-700',
+    sin_stock: 'bg-red-50 text-red-700',
+    descontinuado: 'bg-slate-100 text-slate-500'
+  };
+
+  const totalProductos = inventario.length;
+  const stockBajo = inventario.filter(p => p.estado === 'stock_bajo').length;
+  const sinStock = inventario.filter(p => p.estado === 'sin_stock').length;
+  const valorInventario = inventario.reduce((acc, p) => acc + (p.stock * p.costoImportadora), 0);
+
+  return (
+    <div className="space-y-6">
+      {/* KPIs */}
+      <div className="grid grid-cols-5 gap-4">
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Total SKUs</p>
+          <p className="text-2xl font-bold" style={{ color: tienda.color }}>{totalProductos}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Stock Bajo</p>
+          <p className="text-2xl font-bold text-amber-600">{stockBajo}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Sin Stock</p>
+          <p className="text-2xl font-bold text-red-600">{sinStock}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Valor Inventario</p>
+          <p className="text-2xl font-bold text-emerald-600">${(valorInventario / 1000).toFixed(0)}K</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Solicitudes</p>
+          <p className="text-2xl font-bold text-blue-600">{solicitudes.filter(s => s.estado !== 'recibida').length}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-6">
+        {/* Tabla de Inventario */}
+        <div className="col-span-2 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-slate-50 flex items-center justify-between">
+            <h3 className="font-semibold text-slate-800">Stock por Producto</h3>
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-50">
+              <Upload size={16} />Solicitar Reposición
+            </button>
+          </div>
+          <table className="w-full text-left">
+            <thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase">
+              <tr>
+                <th className="p-4">SKU</th>
+                <th className="p-4">Producto</th>
+                <th className="p-4 text-center">Stock</th>
+                <th className="p-4 text-right">Costo</th>
+                <th className="p-4 text-right">Precio</th>
+                <th className="p-4">Estado</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50 text-sm">
+              {inventario.map(item => (
+                <tr key={item.id} className="hover:bg-slate-50">
+                  <td className="p-4 font-mono text-xs text-slate-500">{item.sku}</td>
+                  <td className="p-4">
+                    <p className="font-medium text-slate-800">{item.nombre}</p>
+                    <p className="text-xs text-slate-400">{item.categoria}</p>
+                  </td>
+                  <td className="p-4 text-center">
+                    <p className={`text-lg font-bold ${item.stock <= item.stockMinimo ? 'text-red-600' : 'text-slate-800'}`}>{item.stock}</p>
+                    <p className="text-[10px] text-slate-400">mín: {item.stockMinimo}</p>
+                  </td>
+                  <td className="p-4 text-right text-slate-600">${item.costoImportadora.toLocaleString()}</td>
+                  <td className="p-4 text-right font-semibold text-slate-800">${item.precioVenta.toLocaleString()}</td>
+                  <td className="p-4">
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${estadoColors[item.estado]}`}>
+                      {item.estado === 'stock_bajo' ? 'Stock Bajo' : item.estado === 'sin_stock' ? 'Sin Stock' : 'OK'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Solicitudes de Reposición */}
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-slate-50">
+            <h3 className="font-semibold text-slate-800">Solicitudes Activas</h3>
+          </div>
+          <div className="divide-y divide-slate-50">
+            {solicitudes.map(sol => (
+              <div key={sol.id} className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold" style={{ color: tienda.color }}>{sol.id}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    sol.estado === 'pendiente' ? 'bg-amber-50 text-amber-700' :
+                    sol.estado === 'aprobada' ? 'bg-blue-50 text-blue-700' :
+                    sol.estado === 'en_preparacion' ? 'bg-purple-50 text-purple-700' :
+                    sol.estado === 'enviada' ? 'bg-cyan-50 text-cyan-700' :
+                    'bg-green-50 text-green-700'
+                  }`}>{sol.estado.replace('_', ' ')}</span>
+                </div>
+                <p className="text-xs text-slate-500 mb-2">{sol.productos.length} producto(s)</p>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400">Estimado: ${(sol.montoEstimado / 1000).toFixed(0)}K</span>
+                  {sol.fechaEstimadaEntrega && <span className="text-slate-500">ETA: {sol.fechaEstimadaEntrega}</span>}
+                </div>
+              </div>
+            ))}
+            {solicitudes.length === 0 && (
+              <div className="p-8 text-center text-slate-400">
+                <Box size={32} className="mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Sin solicitudes activas</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============ FINANZAS TAB ============
+const FinanzasTab: React.FC<{ tienda: TiendaMinorista }> = ({ tienda }) => {
+  const finanzas = FINANZAS_TIENDA[tienda.slug];
+  
+  if (!finanzas) return <div className="text-center text-slate-400 py-12">Sin datos financieros</div>;
+
+  const margenPct = ((finanzas.margenBruto / finanzas.ingresosBrutos) * 100).toFixed(1);
+  const ebitdaPct = ((finanzas.ebitda / finanzas.ingresosBrutos) * 100).toFixed(1);
+  const netoPct = ((finanzas.resultadoNeto / finanzas.ingresosBrutos) * 100).toFixed(1);
+
+  return (
+    <div className="space-y-6">
+      {/* KPIs Financieros */}
+      <div className="grid grid-cols-5 gap-4">
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Ingresos Brutos</p>
+          <p className="text-2xl font-bold" style={{ color: tienda.color }}>${(finanzas.ingresosBrutos / 1000000).toFixed(2)}M</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Margen Bruto</p>
+          <p className="text-2xl font-bold text-emerald-600">{margenPct}%</p>
+          <p className="text-xs text-slate-400">${(finanzas.margenBruto / 1000).toFixed(0)}K</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">EBITDA</p>
+          <p className="text-2xl font-bold text-blue-600">{ebitdaPct}%</p>
+          <p className="text-xs text-slate-400">${(finanzas.ebitda / 1000).toFixed(0)}K</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Resultado Neto</p>
+          <p className="text-2xl font-bold text-green-600">${(finanzas.resultadoNeto / 1000).toFixed(0)}K</p>
+          <p className="text-xs text-green-600">{netoPct}% margen</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Deuda Importadora</p>
+          <p className={`text-2xl font-bold ${finanzas.deudaImportadora > 0 ? 'text-amber-600' : 'text-green-600'}`}>
+            {finanzas.deudaImportadora > 0 ? `$${(finanzas.deudaImportadora / 1000).toFixed(0)}K` : '✓ Al día'}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-6">
+        {/* P&L Simplificado */}
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+          <h3 className="font-semibold text-slate-800 mb-4">P&L Mensual - {finanzas.mes}</h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between py-2 border-b border-slate-100">
+              <span className="text-sm text-slate-600">Ingresos Brutos</span>
+              <span className="font-semibold text-slate-800">${finanzas.ingresosBrutos.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-slate-100">
+              <span className="text-sm text-slate-600">(−) Costo Mercadería</span>
+              <span className="font-semibold text-red-600">−${finanzas.costoMercaderia.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-slate-100 bg-slate-50 -mx-6 px-6">
+              <span className="text-sm font-semibold text-slate-700">= Margen Bruto</span>
+              <span className="font-bold text-emerald-600">${finanzas.margenBruto.toLocaleString()}</span>
+            </div>
+            {finanzas.gastosOperativos.map((gasto, idx) => (
+              <div key={idx} className="flex items-center justify-between py-1">
+                <span className="text-xs text-slate-500">(−) {gasto.concepto}</span>
+                <span className="text-sm text-red-500">−${gasto.monto.toLocaleString()}</span>
+              </div>
+            ))}
+            <div className="flex items-center justify-between py-2 border-t border-slate-100">
+              <span className="text-sm text-slate-600">(−) Total Gastos Op.</span>
+              <span className="font-semibold text-red-600">−${finanzas.totalGastosOperativos.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between py-2 bg-blue-50 -mx-6 px-6">
+              <span className="text-sm font-semibold text-blue-700">= EBITDA</span>
+              <span className="font-bold text-blue-700">${finanzas.ebitda.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm text-slate-600">(−) Impuestos</span>
+              <span className="font-semibold text-red-600">−${finanzas.impuestos.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between py-3 bg-green-50 -mx-6 px-6 rounded-b-lg">
+              <span className="text-sm font-bold text-green-700">= RESULTADO NETO</span>
+              <span className="font-bold text-green-700 text-lg">${finanzas.resultadoNeto.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Pagos */}
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-slate-50 bg-emerald-50">
+              <h3 className="font-semibold text-emerald-800">Pagos Realizados</h3>
+            </div>
+            <div className="divide-y divide-slate-50">
+              {finanzas.pagosRealizados.map((pago, idx) => (
+                <div key={idx} className="p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">{pago.concepto}</p>
+                    <p className="text-xs text-slate-400">{pago.fecha}</p>
+                  </div>
+                  <span className="font-semibold text-emerald-600">${pago.monto.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-slate-50 bg-amber-50">
+              <h3 className="font-semibold text-amber-800">Próximos Pagos</h3>
+            </div>
+            <div className="divide-y divide-slate-50">
+              {finanzas.proximosPagos.map((pago, idx) => (
+                <div key={idx} className="p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">{pago.concepto}</p>
+                    <p className="text-xs text-slate-400">{pago.fecha}</p>
+                  </div>
+                  <span className="font-semibold text-amber-600">${pago.monto.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============ POSTVENTA TAB ============
+const PostventaTab: React.FC<{ tienda: TiendaMinorista }> = ({ tienda }) => {
+  const casos = CASOS_POSTVENTA[tienda.slug] || [];
+  
+  const tipoColors: Record<string, string> = {
+    devolucion: 'bg-purple-50 text-purple-700',
+    garantia: 'bg-red-50 text-red-700',
+    reclamo: 'bg-amber-50 text-amber-700',
+    cambio: 'bg-blue-50 text-blue-700'
+  };
+  
+  const estadoColors: Record<string, string> = {
+    abierto: 'bg-red-50 text-red-700',
+    en_proceso: 'bg-amber-50 text-amber-700',
+    resuelto: 'bg-green-50 text-green-700',
+    cerrado: 'bg-slate-100 text-slate-600'
+  };
+
+  const casosAbiertos = casos.filter(c => c.estado === 'abierto' || c.estado === 'en_proceso').length;
+  const csatPromedio = casos.filter(c => c.csat).reduce((acc, c) => acc + (c.csat || 0), 0) / casos.filter(c => c.csat).length || 0;
+
+  return (
+    <div className="space-y-6">
+      {/* KPIs */}
+      <div className="grid grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Casos Totales</p>
+          <p className="text-2xl font-bold" style={{ color: tienda.color }}>{casos.length}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Casos Abiertos</p>
+          <p className="text-2xl font-bold text-amber-600">{casosAbiertos}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Resueltos (Mes)</p>
+          <p className="text-2xl font-bold text-green-600">{casos.filter(c => c.estado === 'resuelto' || c.estado === 'cerrado').length}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">CSAT Promedio</p>
+          <p className="text-2xl font-bold text-emerald-600">{csatPromedio.toFixed(1)}/10</p>
+        </div>
+      </div>
+
+      {/* Lista de Casos */}
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-slate-50 flex items-center justify-between">
+          <h3 className="font-semibold text-slate-800">Casos de Postventa</h3>
+          <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ backgroundColor: tienda.color }}>
+            <Plus size={16} />Nuevo Caso
+          </button>
+        </div>
+        <table className="w-full text-left">
+          <thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase">
+            <tr>
+              <th className="p-4">Caso</th>
+              <th className="p-4">Cliente</th>
+              <th className="p-4">Tipo</th>
+              <th className="p-4">Producto</th>
+              <th className="p-4">Estado</th>
+              <th className="p-4">Asignado</th>
+              <th className="p-4">CSAT</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-50 text-sm">
+            {casos.map(caso => (
+              <tr key={caso.id} className="hover:bg-slate-50 cursor-pointer">
+                <td className="p-4">
+                  <p className="font-semibold" style={{ color: tienda.color }}>{caso.id}</p>
+                  <p className="text-xs text-slate-400">{caso.fecha}</p>
+                </td>
+                <td className="p-4 text-slate-700">{caso.cliente}</td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${tipoColors[caso.tipo]}`}>
+                    {caso.tipo.charAt(0).toUpperCase() + caso.tipo.slice(1)}
+                  </span>
+                </td>
+                <td className="p-4">
+                  <p className="text-slate-700 text-sm">{caso.producto}</p>
+                  <p className="text-xs text-slate-400">{caso.motivo}</p>
+                </td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${estadoColors[caso.estado]}`}>
+                    {caso.estado.replace('_', ' ')}
+                  </span>
+                </td>
+                <td className="p-4 text-slate-600 text-sm">{caso.asignado}</td>
+                <td className="p-4">
+                  {caso.csat ? (
+                    <div className="flex items-center gap-1">
+                      <Star size={14} className={caso.csat >= 8 ? 'text-green-500 fill-green-500' : caso.csat >= 6 ? 'text-amber-500 fill-amber-500' : 'text-red-500 fill-red-500'} />
+                      <span className="font-medium">{caso.csat}</span>
+                    </div>
+                  ) : <span className="text-slate-300">—</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+// ============ MARKETING TAB ============
+const MarketingTab: React.FC<{ tienda: TiendaMinorista }> = ({ tienda }) => {
+  const contenidos = MARKETING_TIENDA[tienda.slug] || [];
+  
+  const tipoIcons: Record<string, string> = {
+    post: '📸',
+    reel: '🎬',
+    story: '📱',
+    email: '📧',
+    ad: '📢'
+  };
+  
+  const estadoColors: Record<string, string> = {
+    publicado: 'bg-green-50 text-green-700',
+    programado: 'bg-blue-50 text-blue-700',
+    borrador: 'bg-slate-100 text-slate-600',
+    aprobacion: 'bg-amber-50 text-amber-700'
+  };
+
+  const publicados = contenidos.filter(c => c.estado === 'publicado');
+  const totalReach = publicados.reduce((acc, c) => acc + (c.engagement?.reach || 0), 0);
+  const totalEngagement = publicados.reduce((acc, c) => acc + (c.engagement?.likes || 0) + (c.engagement?.comments || 0) + (c.engagement?.shares || 0), 0);
+
+  return (
+    <div className="space-y-6">
+      {/* KPIs */}
+      <div className="grid grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Contenidos (Mes)</p>
+          <p className="text-2xl font-bold" style={{ color: tienda.color }}>{contenidos.length}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Publicados</p>
+          <p className="text-2xl font-bold text-green-600">{publicados.length}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Alcance Total</p>
+          <p className="text-2xl font-bold text-blue-600">{(totalReach / 1000).toFixed(1)}K</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Engagement</p>
+          <p className="text-2xl font-bold text-purple-600">{totalEngagement}</p>
+        </div>
+      </div>
+
+      {/* Calendario y Lista */}
+      <div className="grid grid-cols-3 gap-6">
+        <div className="col-span-2 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-slate-50 flex items-center justify-between">
+            <h3 className="font-semibold text-slate-800">Plan de Contenidos</h3>
+            <span className="text-xs text-slate-500">Asignado desde Marketing Central</span>
+          </div>
+          <div className="divide-y divide-slate-50">
+            {contenidos.map(cont => (
+              <div key={cont.id} className="p-4 flex items-center justify-between hover:bg-slate-50">
+                <div className="flex items-center gap-4">
+                  <span className="text-2xl">{tipoIcons[cont.tipo]}</span>
+                  <div>
+                    <p className="font-medium text-slate-800">{cont.titulo}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-slate-400">{cont.fecha}</span>
+                      <span className="text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{cont.plataforma}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {cont.engagement && (
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-slate-700">{cont.engagement.reach.toLocaleString()} reach</p>
+                      <p className="text-xs text-slate-400">{cont.engagement.likes} likes · {cont.engagement.comments} comments</p>
+                    </div>
+                  )}
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${estadoColors[cont.estado]}`}>
+                    {cont.estado.charAt(0).toUpperCase() + cont.estado.slice(1)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Avatar Asignado */}
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+          <h3 className="font-semibold text-slate-800 mb-4">Avatar Digital</h3>
+          <div className="text-center">
+            <div className="w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center text-5xl" style={{ backgroundColor: tienda.colorSecundario }}>
+              {tienda.slug === 'pet-vogue' ? '👩‍🦰' : tienda.slug === 'coresmart' ? '🧑‍💻' : '👩'}
+            </div>
+            <p className="font-semibold text-slate-800">
+              {tienda.slug === 'pet-vogue' ? 'Emma' : tienda.slug === 'coresmart' ? 'Alex Tech' : 'Sofía'}
+            </p>
+            <p className="text-sm text-slate-500 mb-4">Avatar de {tienda.nombre}</p>
+            <div className="space-y-2 text-left">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-500">Contenidos generados</span>
+                <span className="font-medium">{contenidos.length}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-500">Engagement rate</span>
+                <span className="font-medium text-green-600">4.2%</span>
               </div>
             </div>
-          ))}
+          </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+// ============ AGENTES AI TAB ============
+const AgentesTab: React.FC<{ tienda: TiendaMinorista }> = ({ tienda }) => {
+  const agentes = AGENTES_TIENDA[tienda.slug] || [];
+  
+  const tipoColors: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
+    ventas: { bg: 'from-cyan-50 to-blue-50', text: 'text-cyan-700', icon: MessageSquare },
+    soporte: { bg: 'from-purple-50 to-pink-50', text: 'text-purple-700', icon: Shield },
+    postventa: { bg: 'from-amber-50 to-orange-50', text: 'text-amber-700', icon: RotateCcw },
+    marketing: { bg: 'from-pink-50 to-red-50', text: 'text-pink-700', icon: Sparkles }
+  };
+
+  const totalConversaciones = agentes.reduce((acc, a) => acc + a.conversacionesHoy, 0);
+  const promedioResolucion = agentes.filter(a => a.resolucionAutomatica > 0).reduce((acc, a) => acc + a.resolucionAutomatica, 0) / agentes.filter(a => a.resolucionAutomatica > 0).length || 0;
+  const promedioSatisfaccion = agentes.filter(a => a.satisfaccion > 0).reduce((acc, a) => acc + a.satisfaccion, 0) / agentes.filter(a => a.satisfaccion > 0).length || 0;
+
+  return (
+    <div className="space-y-6">
+      {/* KPIs */}
+      <div className="grid grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Agentes Activos</p>
+          <p className="text-2xl font-bold" style={{ color: tienda.color }}>{agentes.filter(a => a.estado === 'online').length}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Conversaciones Hoy</p>
+          <p className="text-2xl font-bold text-cyan-600">{totalConversaciones}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Resolución Auto.</p>
+          <p className="text-2xl font-bold text-green-600">{promedioResolucion.toFixed(0)}%</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Satisfacción</p>
+          <p className="text-2xl font-bold text-emerald-600">{promedioSatisfaccion.toFixed(1)}/5</p>
+        </div>
+      </div>
+
+      {/* Cards de Agentes */}
+      <div className="grid grid-cols-3 gap-6">
+        {agentes.map(agente => {
+          const config = tipoColors[agente.tipo];
+          const Icon = config.icon;
+          return (
+            <div key={agente.id} className={`bg-gradient-to-br ${config.bg} rounded-xl border border-slate-100 p-6`}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center">
+                    <Icon size={24} className={config.text} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-800">{agente.nombre}</h3>
+                    <p className="text-xs text-slate-500 capitalize">{agente.tipo}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`w-2.5 h-2.5 rounded-full ${agente.estado === 'online' ? 'bg-green-500 animate-pulse' : agente.estado === 'entrenamiento' ? 'bg-amber-500' : 'bg-slate-400'}`} />
+                  <span className={`text-xs font-medium ${agente.estado === 'online' ? 'text-green-600' : agente.estado === 'entrenamiento' ? 'text-amber-600' : 'text-slate-500'}`}>
+                    {agente.estado === 'online' ? 'Online' : agente.estado === 'entrenamiento' ? 'Entrenando' : 'Offline'}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="bg-white/60 rounded-lg p-3">
+                  <p className="text-xs text-slate-500">Conversaciones</p>
+                  <p className={`text-xl font-bold ${config.text}`}>{agente.conversacionesHoy}</p>
+                </div>
+                <div className="bg-white/60 rounded-lg p-3">
+                  <p className="text-xs text-slate-500">Resolución</p>
+                  <p className={`text-xl font-bold ${config.text}`}>{agente.resolucionAutomatica}%</p>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500">Tiempo respuesta</span>
+                  <span className="font-medium text-slate-700">{agente.tiempoRespuestaPromedio}s</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500">Satisfacción</span>
+                  <div className="flex items-center gap-1">
+                    <Star size={14} className="text-amber-400 fill-amber-400" />
+                    <span className="font-medium text-slate-700">{agente.satisfaccion}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500">Escalaciones</span>
+                  <span className={`font-medium ${agente.escalaciones > 5 ? 'text-amber-600' : 'text-slate-700'}`}>{agente.escalaciones}</span>
+                </div>
+              </div>
+              
+              <button className="w-full mt-4 py-2 rounded-lg bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                Configurar Agente
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
