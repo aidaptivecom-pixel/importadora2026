@@ -86,6 +86,7 @@ import PagosPage from './PagosPage';
 import InboxPage from './InboxPage';
 import TiendasOverviewPage from './TiendasOverviewPage';
 import TiendaPage from './TiendaPage';
+import EcommerceHubPage from './EcommerceHubPage';
 import { exportToExcel, exportToCSV, formatEmbarquesForExport, formatInventarioForExport, formatMayoristasForExport, formatProveedoresForExport, formatOperacionesForExport } from '../utils/exportUtils';
 
 interface DashboardContentProps {
@@ -152,7 +153,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ currentPage, onNavi
     case 'mayoristas':
       return <MayoristasPage />;
     case 'ecommerce':
-      return <EcommercePage onNavigate={onNavigate} />;
+      return <EcommerceHubPage onNavigate={onNavigate} />;
     case 'dashboard':
       return <DashboardHome onNavigate={onNavigate} />;
     case 'proveedores':
@@ -610,19 +611,6 @@ const MayoristasPage: React.FC = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4"><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><p className="text-sm text-slate-500 mb-1">Total Clientes</p><p className="text-2xl font-bold text-slate-800">34</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><p className="text-sm text-slate-500 mb-1">Categoría A</p><p className="text-2xl font-bold text-emerald-600">12</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><p className="text-sm text-slate-500 mb-1">Deuda Total</p><p className="text-2xl font-bold text-amber-600">$715K</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><p className="text-sm text-slate-500 mb-1">Ventas Mes</p><p className="text-2xl font-bold text-blue-600">$1.11M</p></div></div>
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden"><div className="overflow-x-auto"><table className="w-full text-left border-collapse"><thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase tracking-wider"><tr><th className="p-4">ID</th><th className="p-4">Cliente</th><th className="p-4">Categoría</th><th className="p-4 text-right">Deuda</th><th className="p-4 text-right">Compras Mes</th><th className="p-4">Estado</th></tr></thead><tbody className="divide-y divide-slate-50 text-sm text-slate-700">{filteredClientes.map((cliente) => (<tr key={cliente.id} className="hover:bg-slate-50/80 transition-colors cursor-pointer"><td className="p-4 font-medium text-blue-600">{cliente.id}</td><td className="p-4 font-medium text-slate-800">{cliente.nombre}</td><td className="p-4"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${cliente.categoria === 'A' ? 'bg-emerald-50 text-emerald-600' : cliente.categoria === 'B' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>Cat. {cliente.categoria}</span></td><td className={`p-4 text-right font-medium ${cliente.deuda > 0 ? 'text-amber-600' : 'text-green-600'}`}>${cliente.deuda.toLocaleString()}</td><td className="p-4 text-right font-semibold text-slate-800">${cliente.comprasMes.toLocaleString()}</td><td className="p-4"><span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${cliente.deuda === 0 ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>{cliente.deuda === 0 ? 'Al día' : 'Deuda'}</span></td></tr>))}</tbody></table></div></div>
-    </div>
-  );
-};
-
-// ============ ECOMMERCE PAGE ============
-const EcommercePage: React.FC<{ onNavigate: (page: PageType, operacionId?: string) => void }> = ({ onNavigate }) => {
-  const bgColors = ['bg-emerald-50', 'bg-pink-50', 'bg-blue-50'];
-  const textColors = ['text-emerald-600', 'text-pink-600', 'text-blue-600'];
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between"><h1 className="text-2xl font-bold text-slate-800">Ecommerce Hub</h1></div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">{ECOMMERCE_STATS.map((tienda, idx) => (<div key={tienda.tienda} className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"><div className="flex items-center justify-between mb-4"><div className={`w-12 h-12 rounded-xl ${bgColors[idx]} flex items-center justify-center`}><Package size={24} className={textColors[idx]} /></div><span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1"><ArrowUpRight size={12} />+{tienda.crecimiento}%</span></div><h3 className="text-lg font-bold text-slate-800 mb-1">{tienda.tienda}</h3><p className="text-sm text-slate-500 mb-4">{tienda.ventas} ventas este mes</p><div className="flex items-center justify-between pt-4 border-t border-slate-100"><span className="text-sm text-slate-500">Ingresos</span><span className="text-lg font-bold text-slate-800">${(tienda.ingresos / 1000000).toFixed(2)}M</span></div></div>))}</div>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4"><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><p className="text-sm text-slate-500 mb-1">Ventas Totales</p><p className="text-2xl font-bold text-slate-800">312</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><p className="text-sm text-slate-500 mb-1">Ingresos Totales</p><p className="text-2xl font-bold text-emerald-600">$7.35M</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><p className="text-sm text-slate-500 mb-1">Ticket Promedio</p><p className="text-2xl font-bold text-blue-600">$23.5K</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><p className="text-sm text-slate-500 mb-1">Crecimiento</p><p className="text-2xl font-bold text-green-600">+24.6%</p></div></div>
     </div>
   );
 };
