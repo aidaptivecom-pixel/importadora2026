@@ -1,10 +1,74 @@
 // ============ EXPORT UTILITIES ============
 // Utilidades para exportar datos a Excel y CSV
 
+// ============ COLUMN DEFINITIONS ============
+export interface ExportColumn {
+  key: string;
+  header: string;
+}
+
+// ============ COLUMN CONFIGS ============
+const embarquesColumns: ExportColumn[] = [
+  { key: 'id', header: 'ID' },
+  { key: 'productName', header: 'Producto' },
+  { key: 'origen', header: 'Origen' },
+  { key: 'tipo', header: 'Tipo' },
+  { key: 'status', header: 'Estado' },
+  { key: 'eta', header: 'ETA' },
+  { key: 'progreso', header: 'Progreso %' },
+  { key: 'value', header: 'Valor USD' }
+];
+
+const inventarioColumns: ExportColumn[] = [
+  { key: 'sku', header: 'SKU' },
+  { key: 'nombre', header: 'Producto' },
+  { key: 'categoria', header: 'Categoría' },
+  { key: 'stock', header: 'Stock' },
+  { key: 'stockMinimo', header: 'Stock Mínimo' },
+  { key: 'costoUSD', header: 'Costo USD' },
+  { key: 'precioVenta', header: 'Precio Venta' },
+  { key: 'ubicacion', header: 'Ubicación' },
+  { key: 'estado', header: 'Estado' }
+];
+
+const mayoristasColumns: ExportColumn[] = [
+  { key: 'id', header: 'ID' },
+  { key: 'nombre', header: 'Cliente' },
+  { key: 'categoria', header: 'Categoría' },
+  { key: 'deuda', header: 'Deuda' },
+  { key: 'comprasMes', header: 'Compras Mes' },
+  { key: 'estado', header: 'Estado' }
+];
+
+const proveedoresColumns: ExportColumn[] = [
+  { key: 'id', header: 'ID' },
+  { key: 'nombre', header: 'Proveedor' },
+  { key: 'contacto', header: 'Contacto' },
+  { key: 'ciudad', header: 'Ciudad' },
+  { key: 'productos', header: 'Productos' },
+  { key: 'rating', header: 'Rating' },
+  { key: 'comprasTotal', header: 'Compras Total' },
+  { key: 'ultimaCompra', header: 'Última Compra' },
+  { key: 'estado', header: 'Estado' }
+];
+
+const operacionesColumns: ExportColumn[] = [
+  { key: 'id', header: 'ID' },
+  { key: 'nombre', header: 'Operación' },
+  { key: 'etapa', header: 'Etapa' },
+  { key: 'riesgo', header: 'Riesgo' },
+  { key: 'tipoTransporte', header: 'Transporte' },
+  { key: 'proveedorCiudad', header: 'Ciudad Origen' },
+  { key: 'montoTotalUSD', header: 'Monto USD' },
+  { key: 'fechaETA', header: 'ETA' },
+  { key: 'bloqueo', header: 'Bloqueo' },
+  { key: 'canalAduana', header: 'Canal Aduana' }
+];
+
 /**
  * Convierte un array de objetos a formato CSV
  */
-export const convertToCSV = (data: Record<string, any>[], columns: { key: string; header: string }[]): string => {
+export const convertToCSV = (data: Record<string, any>[], columns: ExportColumn[]): string => {
   if (data.length === 0) return '';
 
   // Headers
@@ -45,23 +109,23 @@ export const downloadFile = (content: string, filename: string, mimeType: string
  * Exporta datos a CSV
  */
 export const exportToCSV = (
-  data: Record<string, any>[], 
-  columns: { key: string; header: string }[],
+  data: { data: Record<string, any>[]; columns: ExportColumn[] }, 
   filename: string
 ): void => {
-  const csv = convertToCSV(data, columns);
-  downloadFile(csv, `${filename}.csv`, 'text/csv');
+  const csv = convertToCSV(data.data, data.columns);
+  downloadFile(csv, `${filename}_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
 };
 
 /**
  * Exporta datos a Excel (formato XML simplificado que Excel puede abrir)
  */
 export const exportToExcel = (
-  data: Record<string, any>[], 
-  columns: { key: string; header: string }[],
+  data: { data: Record<string, any>[]; columns: ExportColumn[] }, 
   filename: string,
   sheetName: string = 'Datos'
 ): void => {
+  const { data: rows, columns } = data;
+  
   // Create Excel XML
   let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <?mso-application progid="Excel.Sheet"?>
@@ -96,7 +160,7 @@ export const exportToExcel = (
   xml += `</Row>`;
 
   // Data rows
-  data.forEach(row => {
+  rows.forEach(row => {
     xml += `<Row>`;
     columns.forEach(col => {
       const value = row[col.key];
@@ -116,7 +180,7 @@ export const exportToExcel = (
 
   xml += `</Table></Worksheet></Workbook>`;
 
-  downloadFile(xml, `${filename}.xls`, 'application/vnd.ms-excel');
+  downloadFile(xml, `${filename}_${new Date().toISOString().split('T')[0]}.xls`, 'application/vnd.ms-excel');
 };
 
 /**
@@ -145,4 +209,123 @@ export const formatExportValue = (value: any, type: 'currency' | 'date' | 'perce
     default:
       return String(value);
   }
+};
+
+// ============ FORMAT FUNCTIONS ============
+
+/**
+ * Formatea embarques para exportación
+ */
+export const formatEmbarquesForExport = (embarques: any[]): { data: Record<string, any>[]; columns: ExportColumn[] } => {
+  const statusLabels: Record<string, string> = {
+    transito: 'En Tránsito',
+    aduana: 'En Aduana',
+    produccion: 'Producción',
+    demorado: 'Demorado',
+    entregado: 'Entregado'
+  };
+  
+  const tipoLabels: Record<string, string> = {
+    maritimo: 'Marítimo',
+    aereo: 'Aéreo'
+  };
+
+  const data = embarques.map(emb => ({
+    ...emb,
+    status: statusLabels[emb.status] || emb.status,
+    tipo: tipoLabels[emb.tipo] || emb.tipo
+  }));
+
+  return { data, columns: embarquesColumns };
+};
+
+/**
+ * Formatea inventario para exportación
+ */
+export const formatInventarioForExport = (inventario: any[]): { data: Record<string, any>[]; columns: ExportColumn[] } => {
+  const data = inventario.map(item => {
+    const isCritical = item.stock <= item.stockMinimo;
+    const isOutOfStock = item.stock === 0;
+    return {
+      ...item,
+      estado: isOutOfStock ? 'Sin Stock' : isCritical ? 'Crítico' : 'OK'
+    };
+  });
+
+  return { data, columns: inventarioColumns };
+};
+
+/**
+ * Formatea mayoristas para exportación
+ */
+export const formatMayoristasForExport = (mayoristas: any[]): { data: Record<string, any>[]; columns: ExportColumn[] } => {
+  const data = mayoristas.map(cli => ({
+    ...cli,
+    categoria: `Cat. ${cli.categoria}`,
+    estado: cli.deuda === 0 ? 'Al día' : 'Con deuda'
+  }));
+
+  return { data, columns: mayoristasColumns };
+};
+
+/**
+ * Formatea proveedores para exportación
+ */
+export const formatProveedoresForExport = (proveedores: any[]): { data: Record<string, any>[]; columns: ExportColumn[] } => {
+  const estadoLabels: Record<string, string> = {
+    activo: 'Activo',
+    pendiente: 'Pendiente',
+    inactivo: 'Inactivo'
+  };
+
+  const data = proveedores.map(prov => ({
+    ...prov,
+    productos: prov.productos.join(', '),
+    estado: estadoLabels[prov.estado] || prov.estado,
+    ultimaCompra: new Date(prov.ultimaCompra).toLocaleDateString('es-AR')
+  }));
+
+  return { data, columns: proveedoresColumns };
+};
+
+/**
+ * Formatea operaciones para exportación
+ */
+export const formatOperacionesForExport = (operaciones: any[]): { data: Record<string, any>[]; columns: ExportColumn[] } => {
+  const etapaLabels: Record<string, string> = {
+    draft: 'Borrador',
+    po_emitida: 'PO Emitida',
+    produccion: 'Producción',
+    listo_embarque: 'Listo Embarque',
+    en_transito: 'En Tránsito',
+    arribo: 'Arribo',
+    aduana: 'Aduana',
+    liberado: 'Liberado',
+    deposito: 'Depósito',
+    cerrado: 'Cerrado'
+  };
+
+  const riesgoLabels: Record<string, string> = {
+    bajo: 'Bajo',
+    medio: 'Medio',
+    alto: 'Alto',
+    critico: 'Crítico'
+  };
+
+  const transporteLabels: Record<string, string> = {
+    maritimo: 'Marítimo',
+    aereo: 'Aéreo'
+  };
+
+  const data = operaciones.map(op => ({
+    ...op,
+    etapa: etapaLabels[op.etapa] || op.etapa,
+    riesgo: riesgoLabels[op.riesgo] || op.riesgo,
+    tipoTransporte: transporteLabels[op.tipoTransporte] || op.tipoTransporte,
+    fechaETA: op.fechaETA ? new Date(op.fechaETA).toLocaleDateString('es-AR') : '-',
+    bloqueo: op.bloqueo || '-',
+    canalAduana: op.canalAduana ? op.canalAduana.toUpperCase() : '-'
+  }));
+
+  return { data, columns: operacionesColumns };
 };
