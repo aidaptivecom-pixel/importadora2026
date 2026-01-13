@@ -33,6 +33,12 @@ export type PageType =
   | 'contenido'
   | 'avatar'
   | 'analytics'
+  // Agentes AI
+  | 'agentes-centro'
+  | 'agente-ventas'
+  | 'agente-soporte'
+  | 'agente-postventa'
+  | 'agente-marketing'
   // Finanzas
   | 'reportes'
   | 'facturacion'
@@ -88,6 +94,11 @@ const App: React.FC = () => {
       contenido: 'Contenido',
       avatar: 'Avatar Digital',
       analytics: 'Analytics',
+      'agentes-centro': 'Centro de Agentes AI',
+      'agente-ventas': 'Agente de Ventas',
+      'agente-soporte': 'Agente de Soporte',
+      'agente-postventa': 'Agente de Postventa',
+      'agente-marketing': 'Agente de Marketing',
       reportes: 'Reportes',
       facturacion: 'Facturación',
       pagos: 'Pagos',
@@ -129,6 +140,11 @@ const App: React.FC = () => {
       contenido: 'Marketing',
       avatar: 'Marketing',
       analytics: 'Marketing',
+      'agentes-centro': 'Agentes AI',
+      'agente-ventas': 'Agentes AI',
+      'agente-soporte': 'Agentes AI',
+      'agente-postventa': 'Agentes AI',
+      'agente-marketing': 'Agentes AI',
       reportes: 'Finanzas',
       facturacion: 'Finanzas',
       pagos: 'Finanzas',
