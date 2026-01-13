@@ -27,7 +27,12 @@ import {
   Kanban,
   FolderKanban,
   Inbox,
-  Mail
+  Mail,
+  Store,
+  TrendingUp,
+  PawPrint,
+  Home,
+  Heart
 } from 'lucide-react';
 import { PageType } from '../App';
 
@@ -185,6 +190,42 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
           </nav>
         </div>
 
+        {/* Section: Tiendas Minoristas */}
+        <div>
+          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-2">Tiendas Minoristas</h3>
+          <nav className="space-y-1">
+            <MenuItem 
+              icon={<Store size={18} />} 
+              label="Vista General" 
+              active={currentPage === 'tiendas-overview'}
+              onClick={() => onNavigate('tiendas-overview')}
+              badge="3"
+              badgeColor="green"
+            />
+            <MenuItem 
+              icon={<span className="text-base">🐕</span>} 
+              label="Pet Vogue" 
+              active={currentPage === 'pet-vogue'}
+              onClick={() => onNavigate('pet-vogue')}
+              indent
+            />
+            <MenuItem 
+              icon={<span className="text-base">🏠</span>} 
+              label="CoreSmart" 
+              active={currentPage === 'coresmart'}
+              onClick={() => onNavigate('coresmart')}
+              indent
+            />
+            <MenuItem 
+              icon={<span className="text-base">💜</span>} 
+              label="Sensuality" 
+              active={currentPage === 'sensuality'}
+              onClick={() => onNavigate('sensuality')}
+              indent
+            />
+          </nav>
+        </div>
+
         {/* Section: Marketing */}
         <div>
           <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-2">Marketing</h3>
@@ -242,6 +283,19 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
             />
           </nav>
         </div>
+
+        {/* Section: Inversores */}
+        <div>
+          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-2">Inversores</h3>
+          <nav className="space-y-1">
+            <MenuItem 
+              icon={<TrendingUp size={18} />} 
+              label="Dashboard" 
+              active={currentPage === 'inversores'}
+              onClick={() => onNavigate('inversores')}
+            />
+          </nav>
+        </div>
         
         {/* Section: Config */}
         <div>
@@ -287,16 +341,18 @@ interface MenuItemProps {
   label: string;
   active?: boolean;
   badge?: string;
-  badgeColor?: 'red' | 'purple' | 'blue';
+  badgeColor?: 'red' | 'purple' | 'blue' | 'green';
   highlight?: boolean;
+  indent?: boolean;
   onClick: () => void;
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ icon, label, active, badge, badgeColor = 'red', highlight, onClick }) => {
+const MenuItem: React.FC<MenuItemProps> = ({ icon, label, active, badge, badgeColor = 'red', highlight, indent, onClick }) => {
   const badgeColors = {
     red: 'bg-red-500 text-white',
     purple: 'bg-purple-100 text-purple-600',
-    blue: 'bg-blue-100 text-blue-600'
+    blue: 'bg-blue-100 text-blue-600',
+    green: 'bg-emerald-100 text-emerald-600'
   };
 
   return (
@@ -304,6 +360,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, label, active, badge, badgeCo
       onClick={onClick}
       className={`
         w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors
+        ${indent ? 'pl-6' : ''}
         ${active 
           ? 'bg-blue-50 text-blue-600' 
           : highlight 
