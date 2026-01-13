@@ -36,7 +36,11 @@ import {
   Megaphone,
   ImagePlus,
   FolderOpen,
-  Wand2
+  Wand2,
+  Bot,
+  HeadphonesIcon,
+  RefreshCw,
+  Palette
 } from 'lucide-react';
 import { PageType } from '../App';
 
@@ -286,6 +290,57 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
               label="Analytics" 
               active={currentPage === 'analytics'}
               onClick={() => onNavigate('analytics')}
+              indent
+            />
+          </nav>
+        </div>
+
+        {/* Section: Agentes AI */}
+        <div>
+          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-2">Agentes AI</h3>
+          <nav className="space-y-1">
+            <MenuItem 
+              icon={<Bot size={18} />} 
+              label="Centro de Agentes" 
+              active={currentPage === 'agentes-centro'}
+              onClick={() => onNavigate('agentes-centro')}
+              badge="5"
+              badgeColor="purple"
+            />
+            <MenuItem 
+              icon={<ShoppingCart size={18} />} 
+              label="Agente Ventas" 
+              active={currentPage === 'agente-ventas'}
+              onClick={() => onNavigate('agente-ventas')}
+              badge="85"
+              badgeColor="green"
+              indent
+            />
+            <MenuItem 
+              icon={<HeadphonesIcon size={18} />} 
+              label="Agente Soporte" 
+              active={currentPage === 'agente-soporte'}
+              onClick={() => onNavigate('agente-soporte')}
+              badge="23"
+              badgeColor="blue"
+              indent
+            />
+            <MenuItem 
+              icon={<RefreshCw size={18} />} 
+              label="Agente Postventa" 
+              active={currentPage === 'agente-postventa'}
+              onClick={() => onNavigate('agente-postventa')}
+              badge="31"
+              badgeColor="blue"
+              indent
+            />
+            <MenuItem 
+              icon={<Palette size={18} />} 
+              label="Agente Marketing" 
+              active={currentPage === 'agente-marketing'}
+              onClick={() => onNavigate('agente-marketing')}
+              badge="8"
+              badgeColor="purple"
               indent
             />
           </nav>
