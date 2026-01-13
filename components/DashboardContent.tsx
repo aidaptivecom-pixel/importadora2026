@@ -87,6 +87,13 @@ import InboxPage from './InboxPage';
 import TiendasOverviewPage from './TiendasOverviewPage';
 import TiendaPage from './TiendaPage';
 import EcommerceHubPage from './EcommerceHubPage';
+// Marketing Central Module
+import MarketingDashboardPage from './marketing/MarketingDashboardPage';
+import CalendarioEditorialPage from './marketing/CalendarioEditorialPage';
+import AvataresCentralPage from './marketing/AvataresCentralPage';
+import GeneradorContenidoPage from './marketing/GeneradorContenidoPage';
+import CampanasPage from './marketing/CampanasPage';
+import AssetsPage from './marketing/AssetsPage';
 import { exportToExcel, exportToCSV, formatEmbarquesForExport, formatInventarioForExport, formatMayoristasForExport, formatProveedoresForExport, formatOperacionesForExport } from '../utils/exportUtils';
 
 interface DashboardContentProps {
@@ -190,6 +197,19 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ currentPage, onNavi
     case 'sensuality':
       const sensuality = getTiendaBySlug('sensuality');
       return sensuality ? <TiendaPage tienda={sensuality} onNavigate={onNavigate} /> : <PlaceholderPage pageName="Sensuality" />;
+    // Marketing Central Module
+    case 'marketing':
+      return <MarketingDashboardPage />;
+    case 'marketing-calendario':
+      return <CalendarioEditorialPage />;
+    case 'marketing-avatares':
+      return <AvataresCentralPage />;
+    case 'marketing-generador':
+      return <GeneradorContenidoPage />;
+    case 'marketing-campanas':
+      return <CampanasPage />;
+    case 'marketing-assets':
+      return <AssetsPage />;
     default:
       return <PlaceholderPage pageName={currentPage} />;
   }
