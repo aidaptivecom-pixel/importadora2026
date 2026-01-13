@@ -32,7 +32,11 @@ import {
   TrendingUp,
   PawPrint,
   Home,
-  Heart
+  Heart,
+  Megaphone,
+  ImagePlus,
+  FolderOpen,
+  Wand2
 } from 'lucide-react';
 import { PageType } from '../App';
 
@@ -226,35 +230,63 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
           </nav>
         </div>
 
-        {/* Section: Marketing */}
+        {/* Section: Marketing Central */}
         <div>
-          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-2">Marketing</h3>
+          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-2">Marketing Central</h3>
           <nav className="space-y-1">
             <MenuItem 
               icon={<Target size={18} />} 
-              label="Marketing Hub" 
+              label="Dashboard" 
               active={currentPage === 'marketing'}
               onClick={() => onNavigate('marketing')}
             />
             <MenuItem 
               icon={<Calendar size={18} />} 
-              label="Contenido" 
-              active={currentPage === 'contenido'}
-              onClick={() => onNavigate('contenido')}
+              label="Calendario Editorial" 
+              active={currentPage === 'marketing-calendario'}
+              onClick={() => onNavigate('marketing-calendario')}
+              indent
             />
             <MenuItem 
               icon={<Sparkles size={18} />} 
-              label="Avatar Digital" 
-              active={currentPage === 'avatar'}
-              onClick={() => onNavigate('avatar')}
+              label="Avatares IA" 
+              active={currentPage === 'marketing-avatares'}
+              onClick={() => onNavigate('marketing-avatares')}
               badge="AI"
               badgeColor="purple"
+              indent
+            />
+            <MenuItem 
+              icon={<Wand2 size={18} />} 
+              label="Generador" 
+              active={currentPage === 'marketing-generador'}
+              onClick={() => onNavigate('marketing-generador')}
+              badge="AI"
+              badgeColor="purple"
+              indent
+            />
+            <MenuItem 
+              icon={<Megaphone size={18} />} 
+              label="Campañas" 
+              active={currentPage === 'marketing-campanas'}
+              onClick={() => onNavigate('marketing-campanas')}
+              badge="5"
+              badgeColor="blue"
+              indent
+            />
+            <MenuItem 
+              icon={<FolderOpen size={18} />} 
+              label="Assets" 
+              active={currentPage === 'marketing-assets'}
+              onClick={() => onNavigate('marketing-assets')}
+              indent
             />
             <MenuItem 
               icon={<BarChart3 size={18} />} 
               label="Analytics" 
               active={currentPage === 'analytics'}
               onClick={() => onNavigate('analytics')}
+              indent
             />
           </nav>
         </div>
