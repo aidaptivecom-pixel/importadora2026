@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { ContactoCRM, EtapaCRM } from '../types';
 import { CRM_CONTACTOS } from '../constants';
+import EmptyState from './EmptyState';
 
 // ============ EXPORT DROPDOWN ============
 const ExportDropdown: React.FC<{ onExportExcel: () => void; onExportCSV: () => void }> = ({ onExportExcel, onExportCSV }) => {
@@ -110,6 +111,13 @@ const CRMPage: React.FC = () => {
 
   const handleExportExcel = () => console.log('Export Excel');
   const handleExportCSV = () => console.log('Export CSV');
+
+  // Determinar tipo de empty state
+  const getEmptyStateType = () => {
+    if (searchTerm) return 'search';
+    if (filterEtapa || filterOrigen) return 'filter';
+    return 'clients';
+  };
 
   return (
     <div className="space-y-6">
@@ -238,7 +246,12 @@ const CRMPage: React.FC = () => {
                     <ContactCard key={contacto.id} contacto={contacto} onClick={() => setSelectedContact(contacto)} />
                   ))}
                   {contactos.length === 0 && (
-                    <div className="text-center text-slate-400 text-sm py-8">Sin contactos</div>
+                    <EmptyState 
+                      type="clients" 
+                      title="Sin contactos"
+                      description={`No hay contactos en etapa "${etapa.label}"`}
+                      compact
+                    />
                   )}
                 </div>
               </div>
@@ -250,74 +263,83 @@ const CRMPage: React.FC = () => {
       {/* Lista View */}
       {viewMode === 'lista' && (
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                <tr>
-                  <th className="p-4">Contacto</th>
-                  <th className="p-4">Empresa</th>
-                  <th className="p-4">Etapa</th>
-                  <th className="p-4">Origen</th>
-                  <th className="p-4 text-right">Valor Potencial</th>
-                  <th className="p-4 text-center">Prob.</th>
-                  <th className="p-4">Último Contacto</th>
-                  <th className="p-4">Próxima Acción</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50 text-sm text-slate-700">
-                {filteredContactos.map((contacto) => (
-                  <tr
-                    key={contacto.id}
-                    className="hover:bg-slate-50/80 transition-colors cursor-pointer"
-                    onClick={() => setSelectedContact(contacto)}
-                  >
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
-                          {contacto.nombre.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                        </div>
-                        <div>
-                          <p className="font-medium text-slate-800">{contacto.nombre}</p>
-                          <p className="text-xs text-slate-400">{contacto.cargo}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-1.5 text-slate-600">
-                        <Building2 size={14} className="text-slate-400" />
-                        {contacto.empresa}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <EtapaBadge etapa={contacto.etapa} />
-                    </td>
-                    <td className="p-4">
-                      <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">{origenLabels[contacto.origen]}</span>
-                    </td>
-                    <td className="p-4 text-right font-semibold text-slate-800">${contacto.valorPotencial.toLocaleString()}</td>
-                    <td className="p-4 text-center">
-                      <span className={`text-sm font-medium ${contacto.probabilidad >= 70 ? 'text-green-600' : contacto.probabilidad >= 40 ? 'text-amber-600' : 'text-slate-500'}`}>
-                        {contacto.probabilidad}%
-                      </span>
-                    </td>
-                    <td className="p-4 text-slate-500">
-                      {new Date(contacto.ultimoContacto).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
-                    </td>
-                    <td className="p-4">
-                      {contacto.proximaAccion ? (
-                        <div className="flex items-center gap-1.5">
-                          <Clock size={12} className="text-blue-500" />
-                          <span className="text-xs text-slate-600 max-w-[150px] truncate">{contacto.proximaAccion}</span>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-slate-300">—</span>
-                      )}
-                    </td>
+          {filteredContactos.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <tr>
+                    <th className="p-4">Contacto</th>
+                    <th className="p-4">Empresa</th>
+                    <th className="p-4">Etapa</th>
+                    <th className="p-4">Origen</th>
+                    <th className="p-4 text-right">Valor Potencial</th>
+                    <th className="p-4 text-center">Prob.</th>
+                    <th className="p-4">Último Contacto</th>
+                    <th className="p-4">Próxima Acción</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-50 text-sm text-slate-700">
+                  {filteredContactos.map((contacto) => (
+                    <tr
+                      key={contacto.id}
+                      className="hover:bg-slate-50/80 transition-colors cursor-pointer"
+                      onClick={() => setSelectedContact(contacto)}
+                    >
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                            {contacto.nombre.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                          </div>
+                          <div>
+                            <p className="font-medium text-slate-800">{contacto.nombre}</p>
+                            <p className="text-xs text-slate-400">{contacto.cargo}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-1.5 text-slate-600">
+                          <Building2 size={14} className="text-slate-400" />
+                          {contacto.empresa}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <EtapaBadge etapa={contacto.etapa} />
+                      </td>
+                      <td className="p-4">
+                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">{origenLabels[contacto.origen]}</span>
+                      </td>
+                      <td className="p-4 text-right font-semibold text-slate-800">${contacto.valorPotencial.toLocaleString()}</td>
+                      <td className="p-4 text-center">
+                        <span className={`text-sm font-medium ${contacto.probabilidad >= 70 ? 'text-green-600' : contacto.probabilidad >= 40 ? 'text-amber-600' : 'text-slate-500'}`}>
+                          {contacto.probabilidad}%
+                        </span>
+                      </td>
+                      <td className="p-4 text-slate-500">
+                        {new Date(contacto.ultimoContacto).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
+                      </td>
+                      <td className="p-4">
+                        {contacto.proximaAccion ? (
+                          <div className="flex items-center gap-1.5">
+                            <Clock size={12} className="text-blue-500" />
+                            <span className="text-xs text-slate-600 max-w-[150px] truncate">{contacto.proximaAccion}</span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-slate-300">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <EmptyState 
+              type={getEmptyStateType()}
+              title={searchTerm ? `Sin resultados para "${searchTerm}"` : undefined}
+              actionLabel="Limpiar filtros"
+              onAction={clearFilters}
+            />
+          )}
         </div>
       )}
 
@@ -529,7 +551,12 @@ const ContactDetailModal: React.FC<{ contacto: ContactoCRM; onClose: () => void 
                   </div>
                 ))}
                 {contacto.interacciones.length === 0 && (
-                  <p className="text-sm text-slate-400 text-center py-4">Sin interacciones registradas</p>
+                  <EmptyState 
+                    type="messages" 
+                    title="Sin interacciones"
+                    description="Aún no hay interacciones registradas con este contacto."
+                    compact
+                  />
                 )}
               </div>
             </div>
