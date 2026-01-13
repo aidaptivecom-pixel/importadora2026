@@ -24,8 +24,11 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   CalendarClock,
-  CircleDollarSign
+  CircleDollarSign,
+  FileSpreadsheet,
+  Table
 } from 'lucide-react';
+import { exportToExcel, exportToCSV, generateFilename } from '../utils/exportUtils';
 
 // ============ TYPES ============
 type EstadoPago = 'pendiente' | 'vencido' | 'pagado' | 'parcial' | 'programado';
@@ -218,6 +221,49 @@ const PAGOS_DATA: Pago[] = [
   }
 ];
 
+// ============ EXPORT CONFIG ============
+const estadoLabels: Record<EstadoPago, string> = {
+  pendiente: 'Pendiente',
+  vencido: 'Vencido',
+  pagado: 'Pagado',
+  parcial: 'Parcial',
+  programado: 'Programado'
+};
+
+const categoriaLabels: Record<CategoriaPago, string> = {
+  proveedor: 'Proveedor',
+  flete: 'Flete',
+  despachante: 'Despachante',
+  terminal: 'Terminal',
+  impuestos: 'Impuestos',
+  otros: 'Otros'
+};
+
+const metodoPagoLabels: Record<MetodoPago, string> = {
+  transferencia: 'Transferencia',
+  cheque: 'Cheque',
+  efectivo: 'Efectivo',
+  tarjeta: 'Tarjeta',
+  crypto: 'Crypto'
+};
+
+const exportColumns = [
+  { key: 'id', label: 'ID Pago' },
+  { key: 'concepto', label: 'Concepto' },
+  { key: 'descripcion', label: 'Descripción' },
+  { key: 'beneficiario', label: 'Beneficiario' },
+  { key: 'categoria', label: 'Categoría' },
+  { key: 'operacionId', label: 'ID Operación' },
+  { key: 'operacionNombre', label: 'Operación' },
+  { key: 'montoUSD', label: 'Monto USD' },
+  { key: 'montoARS', label: 'Monto ARS' },
+  { key: 'fechaVencimiento', label: 'Fecha Vencimiento' },
+  { key: 'fechaPago', label: 'Fecha Pago' },
+  { key: 'estado', label: 'Estado' },
+  { key: 'metodoPago', label: 'Método Pago' },
+  { key: 'comprobante', label: 'Comprobante' }
+];
+
 // ============ EXPORT DROPDOWN ============
 const ExportDropdown: React.FC<{ onExportExcel: () => void; onExportCSV: () => void }> = ({ onExportExcel, onExportCSV }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -234,10 +280,10 @@ const ExportDropdown: React.FC<{ onExportExcel: () => void; onExportCSV: () => v
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
           <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-slate-100 py-1 z-20">
             <button onClick={() => { onExportExcel(); setIsOpen(false); }} className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-              <FileText size={14} className="text-green-600" />Excel (.xlsx)
+              <FileSpreadsheet size={14} className="text-green-600" />Excel (.xlsx)
             </button>
             <button onClick={() => { onExportCSV(); setIsOpen(false); }} className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-              <FileText size={14} className="text-blue-600" />CSV (.csv)
+              <Table size={14} className="text-blue-600" />CSV (.csv)
             </button>
           </div>
         </>
@@ -294,14 +340,36 @@ const PagosPage: React.FC = () => {
 
   const hasFilters = searchTerm || filterEstado || filterCategoria;
 
+  // Export functions
+  const prepareExportData = (pagos: Pago[]) => {
+    return pagos.map(pago => ({
+      id: pago.id,
+      concepto: pago.concepto,
+      descripcion: pago.descripcion,
+      beneficiario: pago.beneficiario,
+      categoria: categoriaLabels[pago.categoria],
+      operacionId: pago.operacionId,
+      operacionNombre: pago.operacionNombre,
+      montoUSD: pago.montoUSD,
+      montoARS: pago.montoARS,
+      fechaVencimiento: pago.fechaVencimiento,
+      fechaPago: pago.fechaPago || '',
+      estado: estadoLabels[pago.estado],
+      metodoPago: pago.metodoPago ? metodoPagoLabels[pago.metodoPago] : '',
+      comprobante: pago.comprobante || ''
+    }));
+  };
+
   const handleExportExcel = () => {
-    console.log('Export Excel - Pagos');
-    alert('Exportando a Excel...');
+    const data = prepareExportData(filteredPagos);
+    const filename = generateFilename('pagos');
+    exportToExcel(data, exportColumns, filename);
   };
 
   const handleExportCSV = () => {
-    console.log('Export CSV - Pagos');
-    alert('Exportando a CSV...');
+    const data = prepareExportData(filteredPagos);
+    const filename = generateFilename('pagos');
+    exportToCSV(data, exportColumns, filename);
   };
 
   const openDetail = (pago: Pago) => {
@@ -318,14 +386,7 @@ const PagosPage: React.FC = () => {
       pagado: 'bg-green-100 text-green-700',
       parcial: 'bg-purple-100 text-purple-700'
     };
-    const labels: Record<EstadoPago, string> = {
-      vencido: 'Vencido',
-      pendiente: 'Pendiente',
-      programado: 'Programado',
-      pagado: 'Pagado',
-      parcial: 'Parcial'
-    };
-    return <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${styles[estado]}`}>{labels[estado]}</span>;
+    return <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${styles[estado]}`}>{estadoLabels[estado]}</span>;
   };
 
   const getCategoriaIcon = (categoria: CategoriaPago) => {
@@ -341,15 +402,7 @@ const PagosPage: React.FC = () => {
   };
 
   const getCategoriaLabel = (categoria: CategoriaPago) => {
-    const labels: Record<CategoriaPago, string> = {
-      proveedor: 'Proveedor',
-      flete: 'Flete',
-      despachante: 'Despachante',
-      terminal: 'Terminal',
-      impuestos: 'Impuestos',
-      otros: 'Otros'
-    };
-    return labels[categoria];
+    return categoriaLabels[categoria];
   };
 
   const getDiasVencimiento = (fecha: string) => {
