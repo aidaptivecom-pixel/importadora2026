@@ -83,6 +83,7 @@ import CRMPage from './CRMPage';
 import FacturacionPage from './FacturacionPage';
 import CobranzasPage from './CobranzasPage';
 import PagosPage from './PagosPage';
+import PedidosPage from './PedidosPage';
 import InboxPage from './InboxPage';
 import TiendasOverviewPage from './TiendasOverviewPage';
 import TiendaPage from './TiendaPage';
@@ -167,6 +168,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ currentPage, onNavi
       return <MayoristasPage />;
     case 'ecommerce':
       return <EcommerceHubPage onNavigate={onNavigate} />;
+    case 'pedidos':
+      return <PedidosPage />;
     case 'dashboard':
       return <DashboardHome onNavigate={onNavigate} />;
     case 'proveedores':
