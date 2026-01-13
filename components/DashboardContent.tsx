@@ -71,6 +71,7 @@ import {
   Cell
 } from 'recharts';
 import { KPIS, REVENUE_DATA, RECENT_SHIPMENTS, CATEGORIES, DONUT_DATA, CLIENTES_MAYORISTAS, ECOMMERCE_STATS, PROVEEDORES, INVENTARIO, OPERACIONES, URGENT_ITEMS, PROXIMOS_HITOS, PAGOS_PROXIMOS, CAJA_BREAKDOWN } from '../constants';
+import { TIENDAS_MINORISTAS } from '../constants/tiendas';
 import { PageType } from '../App';
 import { Operacion, EtapaOperacion } from '../types';
 import OperacionDetallePage from './OperacionDetallePage';
@@ -83,6 +84,8 @@ import FacturacionPage from './FacturacionPage';
 import CobranzasPage from './CobranzasPage';
 import PagosPage from './PagosPage';
 import InboxPage from './InboxPage';
+import TiendasOverviewPage from './TiendasOverviewPage';
+import TiendaPage from './TiendaPage';
 import { exportToExcel, exportToCSV, formatEmbarquesForExport, formatInventarioForExport, formatMayoristasForExport, formatProveedoresForExport, formatOperacionesForExport } from '../utils/exportUtils';
 
 interface DashboardContentProps {
@@ -128,6 +131,9 @@ const FilterBadge: React.FC<{ label: string; onClear: () => void }> = ({ label, 
 );
 
 const DashboardContent: React.FC<DashboardContentProps> = ({ currentPage, onNavigate, selectedOperacionId }) => {
+  // Helper to find tienda by slug
+  const getTiendaBySlug = (slug: string) => TIENDAS_MINORISTAS.find(t => t.slug === slug);
+  
   switch(currentPage) {
     case 'hoy':
       return <HoyPage onNavigate={onNavigate} />;
@@ -171,6 +177,18 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ currentPage, onNavi
       return <CobranzasPage />;
     case 'pagos':
       return <PagosPage />;
+    // Tiendas Minoristas
+    case 'tiendas-overview':
+      return <TiendasOverviewPage onNavigate={onNavigate} />;
+    case 'pet-vogue':
+      const petVogue = getTiendaBySlug('pet-vogue');
+      return petVogue ? <TiendaPage tienda={petVogue} onNavigate={onNavigate} /> : <PlaceholderPage pageName="Pet Vogue" />;
+    case 'coresmart':
+      const coresmart = getTiendaBySlug('coresmart');
+      return coresmart ? <TiendaPage tienda={coresmart} onNavigate={onNavigate} /> : <PlaceholderPage pageName="CoreSmart" />;
+    case 'sensuality':
+      const sensuality = getTiendaBySlug('sensuality');
+      return sensuality ? <TiendaPage tienda={sensuality} onNavigate={onNavigate} /> : <PlaceholderPage pageName="Sensuality" />;
     default:
       return <PlaceholderPage pageName={currentPage} />;
   }
