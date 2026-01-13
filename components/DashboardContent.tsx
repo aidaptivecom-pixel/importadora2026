@@ -85,6 +85,7 @@ import CobranzasPage from './CobranzasPage';
 import PagosPage from './PagosPage';
 import PedidosPage from './PedidosPage';
 import ReportesPage from './ReportesPage';
+import ConfiguracionPage from './ConfiguracionPage';
 import InboxPage from './InboxPage';
 import TiendasOverviewPage from './TiendasOverviewPage';
 import TiendaPage from './TiendaPage';
@@ -173,6 +174,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ currentPage, onNavi
       return <PedidosPage />;
     case 'reportes':
       return <ReportesPage />;
+    case 'configuracion':
+      return <ConfiguracionPage />;
     case 'dashboard':
       return <DashboardHome onNavigate={onNavigate} />;
     case 'proveedores':
