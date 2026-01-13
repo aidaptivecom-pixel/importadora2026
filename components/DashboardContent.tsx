@@ -82,6 +82,7 @@ import CRMPage from './CRMPage';
 import FacturacionPage from './FacturacionPage';
 import CobranzasPage from './CobranzasPage';
 import PagosPage from './PagosPage';
+import InboxPage from './InboxPage';
 import { exportToExcel, exportToCSV, formatEmbarquesForExport, formatInventarioForExport, formatMayoristasForExport, formatProveedoresForExport, formatOperacionesForExport } from '../utils/exportUtils';
 
 interface DashboardContentProps {
@@ -160,6 +161,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ currentPage, onNavi
       return <AnalyticsPage />;
     case 'integraciones':
       return <IntegracionesPage />;
+    case 'inbox':
+      return <InboxPage />;
     case 'crm':
       return <CRMPage />;
     case 'facturacion':
