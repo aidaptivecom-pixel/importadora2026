@@ -28,6 +28,7 @@ import {
   Copy,
   Printer
 } from 'lucide-react';
+import EmptyState from './EmptyState';
 
 interface Pedido {
   id: string;
@@ -309,6 +310,19 @@ const PedidosPage: React.FC = () => {
     });
   };
 
+  // Determinar tipo de empty state
+  const getEmptyStateType = () => {
+    if (searchTerm) return 'search';
+    if (filterEstado !== 'todos' || filterOrigen !== 'todos') return 'filter';
+    return 'orders';
+  };
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilterEstado('todos');
+    setFilterOrigen('todos');
+  };
+
   return (
     <div className="space-y-6">
       {/* KPIs */}
@@ -374,7 +388,10 @@ const PedidosPage: React.FC = () => {
 
       {/* Estado rápido */}
       <div className="grid grid-cols-3 gap-4">
-        <button className="bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl p-4 text-left transition-colors">
+        <button 
+          onClick={() => setFilterEstado('pendiente')}
+          className={`bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl p-4 text-left transition-colors ${filterEstado === 'pendiente' ? 'ring-2 ring-amber-400' : ''}`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-2xl font-bold text-amber-700">{kpis.pendientes}</p>
@@ -383,7 +400,10 @@ const PedidosPage: React.FC = () => {
             <Clock className="text-amber-400" size={32} />
           </div>
         </button>
-        <button className="bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl p-4 text-left transition-colors">
+        <button 
+          onClick={() => setFilterEstado('preparacion')}
+          className={`bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl p-4 text-left transition-colors ${filterEstado === 'preparacion' ? 'ring-2 ring-purple-400' : ''}`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-2xl font-bold text-purple-700">{kpis.enProceso}</p>
@@ -392,7 +412,10 @@ const PedidosPage: React.FC = () => {
             <Package className="text-purple-400" size={32} />
           </div>
         </button>
-        <button className="bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl p-4 text-left transition-colors">
+        <button 
+          onClick={() => setFilterEstado('despachado')}
+          className={`bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl p-4 text-left transition-colors ${filterEstado === 'despachado' ? 'ring-2 ring-indigo-400' : ''}`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-2xl font-bold text-indigo-700">{kpis.despachados}</p>
@@ -444,6 +467,15 @@ const PedidosPage: React.FC = () => {
               <option value="presencial">Presencial</option>
               <option value="web">Web</option>
             </select>
+
+            {(searchTerm || filterEstado !== 'todos' || filterOrigen !== 'todos') && (
+              <button 
+                onClick={clearFilters}
+                className="px-3 py-2 text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
+              >
+                Limpiar filtros
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -459,128 +491,139 @@ const PedidosPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabla de pedidos */}
+      {/* Tabla de pedidos o Empty State */}
       <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-slate-50 border-b border-slate-100">
-            <tr>
-              <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Pedido</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Cliente</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Fecha</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Entrega</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Items</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Total</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Estado</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Canal</th>
-              <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {filteredPedidos.map((pedido) => {
-              const estadoConfig = getEstadoConfig(pedido.estado);
-              const EstadoIcon = estadoConfig.icon;
-              
-              return (
-                <tr 
-                  key={pedido.id} 
-                  className="hover:bg-slate-50/50 transition-colors cursor-pointer"
-                  onClick={() => setSelectedPedido(pedido)}
-                >
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-semibold text-slate-800">{pedido.numero}</span>
-                      {pedido.prioridad === 'urgente' && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-bold bg-red-100 text-red-600 rounded">
-                          URGENTE
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${getCategoriaColor(pedido.cliente.categoria)}`}>
-                        {pedido.cliente.categoria}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-slate-800">{pedido.cliente.empresa}</p>
-                        <p className="text-xs text-slate-500">{pedido.cliente.nombre}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="text-sm text-slate-600">{formatDate(pedido.fecha)}</span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="text-sm text-slate-600">{formatDate(pedido.fechaEntrega)}</span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="text-sm text-slate-600">{pedido.items} items</span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="text-sm font-semibold text-slate-800">{formatCurrency(pedido.total)}</span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${estadoConfig.color}`}>
-                      <EstadoIcon size={12} />
-                      {estadoConfig.label}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="text-lg" title={pedido.origen}>
-                      {getOrigenIcon(pedido.origen)}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center justify-end gap-1">
-                      <button 
-                        className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedPedido(pedido);
-                        }}
-                      >
-                        <Eye size={16} className="text-slate-400" />
-                      </button>
-                      <button 
-                        className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Printer size={16} className="text-slate-400" />
-                      </button>
-                      <button 
-                        className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <MoreHorizontal size={16} className="text-slate-400" />
-                      </button>
-                    </div>
-                  </td>
+        {filteredPedidos.length > 0 ? (
+          <>
+            <table className="w-full">
+              <thead className="bg-slate-50 border-b border-slate-100">
+                <tr>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Pedido</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Cliente</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Fecha</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Entrega</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Items</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Total</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Estado</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Canal</th>
+                  <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Acciones</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredPedidos.map((pedido) => {
+                  const estadoConfig = getEstadoConfig(pedido.estado);
+                  const EstadoIcon = estadoConfig.icon;
+                  
+                  return (
+                    <tr 
+                      key={pedido.id} 
+                      className="hover:bg-slate-50/50 transition-colors cursor-pointer"
+                      onClick={() => setSelectedPedido(pedido)}
+                    >
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-sm font-semibold text-slate-800">{pedido.numero}</span>
+                          {pedido.prioridad === 'urgente' && (
+                            <span className="px-1.5 py-0.5 text-[10px] font-bold bg-red-100 text-red-600 rounded">
+                              URGENTE
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${getCategoriaColor(pedido.cliente.categoria)}`}>
+                            {pedido.cliente.categoria}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-slate-800">{pedido.cliente.empresa}</p>
+                            <p className="text-xs text-slate-500">{pedido.cliente.nombre}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-sm text-slate-600">{formatDate(pedido.fecha)}</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-sm text-slate-600">{formatDate(pedido.fechaEntrega)}</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-sm text-slate-600">{pedido.items} items</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-sm font-semibold text-slate-800">{formatCurrency(pedido.total)}</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${estadoConfig.color}`}>
+                          <EstadoIcon size={12} />
+                          {estadoConfig.label}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-lg" title={pedido.origen}>
+                          {getOrigenIcon(pedido.origen)}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-end gap-1">
+                          <button 
+                            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedPedido(pedido);
+                            }}
+                          >
+                            <Eye size={16} className="text-slate-400" />
+                          </button>
+                          <button 
+                            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Printer size={16} className="text-slate-400" />
+                          </button>
+                          <button 
+                            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreHorizontal size={16} className="text-slate-400" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
 
-        {/* Paginación */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 bg-slate-50">
-          <p className="text-sm text-slate-500">
-            Mostrando {filteredPedidos.length} de {pedidos.length} pedidos
-          </p>
-          <div className="flex items-center gap-2">
-            <button className="px-3 py-1.5 text-sm text-slate-600 hover:bg-white rounded border border-slate-200">
-              Anterior
-            </button>
-            <button className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded">
-              1
-            </button>
-            <button className="px-3 py-1.5 text-sm text-slate-600 hover:bg-white rounded border border-slate-200">
-              2
-            </button>
-            <button className="px-3 py-1.5 text-sm text-slate-600 hover:bg-white rounded border border-slate-200">
-              Siguiente
-            </button>
-          </div>
-        </div>
+            {/* Paginación */}
+            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 bg-slate-50">
+              <p className="text-sm text-slate-500">
+                Mostrando {filteredPedidos.length} de {pedidos.length} pedidos
+              </p>
+              <div className="flex items-center gap-2">
+                <button className="px-3 py-1.5 text-sm text-slate-600 hover:bg-white rounded border border-slate-200">
+                  Anterior
+                </button>
+                <button className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded">
+                  1
+                </button>
+                <button className="px-3 py-1.5 text-sm text-slate-600 hover:bg-white rounded border border-slate-200">
+                  2
+                </button>
+                <button className="px-3 py-1.5 text-sm text-slate-600 hover:bg-white rounded border border-slate-200">
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <EmptyState 
+            type={getEmptyStateType()}
+            title={searchTerm ? `Sin resultados para "${searchTerm}"` : undefined}
+            actionLabel="Limpiar filtros"
+            onAction={clearFilters}
+          />
+        )}
       </div>
 
       {/* Panel lateral de detalle */}
