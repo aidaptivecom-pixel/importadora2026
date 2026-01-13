@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import DashboardContent from './components/DashboardContent';
+import { pageVariants } from './utils/animations';
 
 export type PageType = 
   // Principal
@@ -173,12 +175,22 @@ const App: React.FC = () => {
             onNavigate={handleNavigate}
           />
           
-          <main className="flex-1 p-8 overflow-y-auto">
-            <DashboardContent 
-              currentPage={currentPage} 
-              onNavigate={handleNavigate}
-              selectedOperacionId={selectedOperacionId}
-            />
+          <main className="flex-1 p-8 overflow-y-auto overflow-x-hidden">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentPage + (selectedOperacionId || '')}
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                <DashboardContent 
+                  currentPage={currentPage} 
+                  onNavigate={handleNavigate}
+                  selectedOperacionId={selectedOperacionId}
+                />
+              </motion.div>
+            </AnimatePresence>
           </main>
         </div>
       </div>
