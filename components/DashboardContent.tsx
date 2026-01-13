@@ -94,6 +94,12 @@ import AvataresCentralPage from './marketing/AvataresCentralPage';
 import GeneradorContenidoPage from './marketing/GeneradorContenidoPage';
 import CampanasPage from './marketing/CampanasPage';
 import AssetsPage from './marketing/AssetsPage';
+// Agentes AI Module
+import CentroAgentesPage from './agentes/CentroAgentesPage';
+import AgenteVentasPage from './agentes/AgenteVentasPage';
+import AgenteSoportePage from './agentes/AgenteSoportePage';
+import AgentePostventaPage from './agentes/AgentePostventaPage';
+import AgenteMarketingPage from './agentes/AgenteMarketingPage';
 import { exportToExcel, exportToCSV, formatEmbarquesForExport, formatInventarioForExport, formatMayoristasForExport, formatProveedoresForExport, formatOperacionesForExport } from '../utils/exportUtils';
 
 interface DashboardContentProps {
@@ -210,6 +216,17 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ currentPage, onNavi
       return <CampanasPage />;
     case 'marketing-assets':
       return <AssetsPage />;
+    // Agentes AI Module
+    case 'agentes-centro':
+      return <CentroAgentesPage />;
+    case 'agente-ventas':
+      return <AgenteVentasPage />;
+    case 'agente-soporte':
+      return <AgenteSoportePage />;
+    case 'agente-postventa':
+      return <AgentePostventaPage />;
+    case 'agente-marketing':
+      return <AgenteMarketingPage />;
     default:
       return <PlaceholderPage pageName={currentPage} />;
   }
