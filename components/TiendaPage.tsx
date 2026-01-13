@@ -48,7 +48,20 @@ import {
   MoreHorizontal,
   Download,
   Upload,
-  Box
+  Box,
+  Inbox,
+  MessageCircle,
+  Instagram,
+  Facebook,
+  Globe,
+  Hash,
+  Circle,
+  Archive,
+  Reply,
+  UserCheck,
+  Smile,
+  Frown,
+  Meh
 } from 'lucide-react';
 import {
   AreaChart,
@@ -76,7 +89,10 @@ import {
   CASOS_POSTVENTA,
   MARKETING_TIENDA,
   AGENTES_TIENDA,
-  SOLICITUDES_REPOSICION
+  SOLICITUDES_REPOSICION,
+  INBOX_TIENDA,
+  INBOX_STATS,
+  MensajeInbox
 } from '../constants/tiendasData';
 
 interface TiendaPageProps {
@@ -84,7 +100,7 @@ interface TiendaPageProps {
   onNavigate: (page: PageType) => void;
 }
 
-type TabType = 'dashboard' | 'ventas' | 'clientes' | 'inventario' | 'finanzas' | 'postventa' | 'marketing' | 'agentes';
+type TabType = 'dashboard' | 'inbox' | 'ventas' | 'clientes' | 'inventario' | 'finanzas' | 'postventa' | 'marketing' | 'agentes';
 
 const TiendaPage: React.FC<TiendaPageProps> = ({ tienda, onNavigate }) => {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -92,9 +108,11 @@ const TiendaPage: React.FC<TiendaPageProps> = ({ tienda, onNavigate }) => {
   const metricas = TIENDAS_METRICAS_DIARIAS[tienda.id] || [];
   const alertas = TIENDAS_ALERTAS.filter(a => a.tiendaId === tienda.id);
   const proyeccion = TIENDAS_PROYECCIONES[tienda.id as keyof typeof TIENDAS_PROYECCIONES];
+  const inboxStats = INBOX_STATS[tienda.slug];
   
-  const tabs: { id: TabType; label: string; icon: React.ElementType }[] = [
+  const tabs: { id: TabType; label: string; icon: React.ElementType; badge?: number }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { id: 'inbox', label: 'Inbox', icon: Inbox, badge: inboxStats?.nuevas || 0 },
     { id: 'ventas', label: 'Ventas', icon: ShoppingCart },
     { id: 'clientes', label: 'Clientes', icon: Users },
     { id: 'inventario', label: 'Inventario', icon: Package },
@@ -108,6 +126,8 @@ const TiendaPage: React.FC<TiendaPageProps> = ({ tienda, onNavigate }) => {
     switch (activeTab) {
       case 'dashboard':
         return <DashboardTab tienda={tienda} metricas={metricas} alertas={alertas} proyeccion={proyeccion} />;
+      case 'inbox':
+        return <InboxTab tienda={tienda} />;
       case 'ventas':
         return <VentasTab tienda={tienda} />;
       case 'clientes':
@@ -182,6 +202,11 @@ const TiendaPage: React.FC<TiendaPageProps> = ({ tienda, onNavigate }) => {
                 >
                   <Icon size={16} />
                   {tab.label}
+                  {tab.badge && tab.badge > 0 && (
+                    <span className="ml-1 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-red-500 text-white">
+                      {tab.badge}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -357,6 +382,365 @@ const DashboardTab: React.FC<{ tienda: TiendaMinorista; metricas: any[]; alertas
           <button className="w-full py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
             Solicitar mercadería
           </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============ INBOX TAB ============
+const InboxTab: React.FC<{ tienda: TiendaMinorista }> = ({ tienda }) => {
+  const mensajes = INBOX_TIENDA[tienda.slug] || [];
+  const stats = INBOX_STATS[tienda.slug];
+  const [filtroCanal, setFiltroCanal] = useState<string>('');
+  const [filtroEstado, setFiltroEstado] = useState<string>('');
+  const [busqueda, setBusqueda] = useState<string>('');
+  const [mensajeSeleccionado, setMensajeSeleccionado] = useState<MensajeInbox | null>(null);
+
+  const mensajesFiltrados = mensajes.filter(m => {
+    if (filtroCanal && m.canal !== filtroCanal) return false;
+    if (filtroEstado && m.estado !== filtroEstado) return false;
+    if (busqueda && !m.cliente.nombre.toLowerCase().includes(busqueda.toLowerCase()) && !m.ultimoMensaje.toLowerCase().includes(busqueda.toLowerCase())) return false;
+    return true;
+  });
+
+  const canalIcons: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
+    whatsapp: { icon: MessageCircle, color: 'text-green-600', bg: 'bg-green-50' },
+    instagram: { icon: Instagram, color: 'text-pink-600', bg: 'bg-pink-50' },
+    mercadolibre: { icon: ShoppingCart, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+    email: { icon: Mail, color: 'text-blue-600', bg: 'bg-blue-50' },
+    web_chat: { icon: Globe, color: 'text-slate-600', bg: 'bg-slate-100' },
+    facebook: { icon: Facebook, color: 'text-blue-700', bg: 'bg-blue-50' }
+  };
+
+  const estadoColors: Record<string, { bg: string; text: string; label: string }> = {
+    nuevo: { bg: 'bg-red-50', text: 'text-red-700', label: 'Nuevo' },
+    en_proceso: { bg: 'bg-amber-50', text: 'text-amber-700', label: 'En proceso' },
+    respondido: { bg: 'bg-blue-50', text: 'text-blue-700', label: 'Respondido' },
+    esperando_cliente: { bg: 'bg-purple-50', text: 'text-purple-700', label: 'Esperando' },
+    cerrado: { bg: 'bg-slate-100', text: 'text-slate-600', label: 'Cerrado' }
+  };
+
+  const sentimientoIcons: Record<string, { icon: React.ElementType; color: string }> = {
+    positivo: { icon: Smile, color: 'text-green-500' },
+    neutral: { icon: Meh, color: 'text-slate-400' },
+    negativo: { icon: Frown, color: 'text-red-500' }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* KPIs de Inbox */}
+      <div className="grid grid-cols-6 gap-4">
+        <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Total Conversaciones</p>
+          <p className="text-2xl font-bold" style={{ color: tienda.color }}>{stats?.totalConversaciones || 0}</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Nuevas</p>
+          <p className="text-2xl font-bold text-red-600">{stats?.nuevas || 0}</p>
+          <p className="text-xs text-red-500">requieren atención</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">En Proceso</p>
+          <p className="text-2xl font-bold text-amber-600">{stats?.enProceso || 0}</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Tiempo Respuesta</p>
+          <p className="text-2xl font-bold text-blue-600">{stats?.tiempoPromedioRespuesta || 0}m</p>
+          <p className="text-xs text-slate-400">promedio</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Resolución 1er Contacto</p>
+          <p className="text-2xl font-bold text-green-600">{stats?.resolucionPrimerContacto || 0}%</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Satisfacción</p>
+          <div className="flex items-center gap-1">
+            <Star size={18} className="text-amber-400 fill-amber-400" />
+            <p className="text-2xl font-bold text-slate-800">{stats?.satisfaccionPromedio?.toFixed(1) || 0}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Distribución por Canal */}
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {Object.entries(stats?.porCanal || {}).map(([canal, count]) => {
+              const config = canalIcons[canal];
+              const Icon = config?.icon || MessageSquare;
+              return (
+                <button
+                  key={canal}
+                  onClick={() => setFiltroCanal(filtroCanal === canal ? '' : canal)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
+                    filtroCanal === canal ? 'ring-2 ring-offset-1' : 'hover:bg-slate-50'
+                  } ${config?.bg || 'bg-slate-50'}`}
+                  style={filtroCanal === canal ? { ringColor: tienda.color } : {}}
+                >
+                  <Icon size={16} className={config?.color || 'text-slate-500'} />
+                  <span className="text-sm font-medium text-slate-700 capitalize">{canal.replace('_', ' ')}</span>
+                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${config?.bg || 'bg-slate-100'} ${config?.color || 'text-slate-600'}`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Buscar conversación..."
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm w-64"
+              />
+            </div>
+            <select
+              value={filtroEstado}
+              onChange={(e) => setFiltroEstado(e.target.value)}
+              className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm"
+            >
+              <option value="">Todos los estados</option>
+              <option value="nuevo">Nuevos</option>
+              <option value="en_proceso">En proceso</option>
+              <option value="respondido">Respondidos</option>
+              <option value="esperando_cliente">Esperando cliente</option>
+              <option value="cerrado">Cerrados</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Lista de Conversaciones */}
+      <div className="grid grid-cols-3 gap-6">
+        <div className="col-span-2 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-slate-50 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Inbox size={18} style={{ color: tienda.color }} />
+              <h3 className="font-semibold text-slate-800">Conversaciones</h3>
+              <span className="text-xs text-slate-400">({mensajesFiltrados.length})</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button className="text-xs px-2 py-1 rounded bg-slate-100 text-slate-600 hover:bg-slate-200">
+                <Archive size={12} className="inline mr-1" />Archivar leídos
+              </button>
+            </div>
+          </div>
+          <div className="divide-y divide-slate-50 max-h-[600px] overflow-y-auto">
+            {mensajesFiltrados.map(mensaje => {
+              const canalConfig = canalIcons[mensaje.canal];
+              const CanalIcon = canalConfig?.icon || MessageSquare;
+              const estadoConfig = estadoColors[mensaje.estado];
+              const sentConfig = mensaje.sentimiento ? sentimientoIcons[mensaje.sentimiento] : null;
+              const SentIcon = sentConfig?.icon || Meh;
+              const isSelected = mensajeSeleccionado?.id === mensaje.id;
+
+              return (
+                <div
+                  key={mensaje.id}
+                  onClick={() => setMensajeSeleccionado(mensaje)}
+                  className={`p-4 hover:bg-slate-50 cursor-pointer transition-colors ${
+                    isSelected ? 'bg-slate-50 border-l-4' : ''
+                  } ${mensaje.estado === 'nuevo' ? 'bg-red-50/30' : ''}`}
+                  style={isSelected ? { borderLeftColor: tienda.color } : {}}
+                >
+                  <div className="flex items-start gap-3">
+                    {/* Avatar/Canal */}
+                    <div className="relative">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${canalConfig?.bg || 'bg-slate-100'}`}>
+                        <CanalIcon size={18} className={canalConfig?.color || 'text-slate-500'} />
+                      </div>
+                      {mensaje.mensajesSinLeer > 0 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                          {mensaje.mensajesSinLeer}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Contenido */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`font-semibold ${mensaje.estado === 'nuevo' ? 'text-slate-900' : 'text-slate-700'}`}>
+                            {mensaje.cliente.nombre}
+                          </span>
+                          {mensaje.prioridad === 'alta' && (
+                            <span className="text-[10px] px-1.5 py-0.5 bg-red-100 text-red-700 rounded font-semibold">URGENTE</span>
+                          )}
+                          {sentConfig && <SentIcon size={14} className={sentConfig.color} />}
+                        </div>
+                        <span className="text-xs text-slate-400">{mensaje.horaUltimoMensaje}</span>
+                      </div>
+
+                      {mensaje.asunto && (
+                        <p className="text-sm font-medium text-slate-700 mb-1 truncate">{mensaje.asunto}</p>
+                      )}
+
+                      <p className={`text-sm truncate ${mensaje.estado === 'nuevo' ? 'text-slate-800 font-medium' : 'text-slate-500'}`}>
+                        {mensaje.ultimoMensaje}
+                      </p>
+
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${estadoConfig.bg} ${estadoConfig.text}`}>
+                          {estadoConfig.label}
+                        </span>
+                        {mensaje.asignado !== 'Sin asignar' && (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                            {mensaje.asignado === 'Agente AI' ? '🤖' : '👤'} {mensaje.asignado}
+                          </span>
+                        )}
+                        {mensaje.tiempoEspera && mensaje.tiempoEspera > 0 && mensaje.estado !== 'cerrado' && (
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                            mensaje.tiempoEspera > 60 ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-500'
+                          }`}>
+                            <Clock size={10} />
+                            {mensaje.tiempoEspera}m
+                          </span>
+                        )}
+                        {mensaje.pedidoRelacionado && (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
+                            📦 {mensaje.pedidoRelacionado}
+                          </span>
+                        )}
+                      </div>
+
+                      {mensaje.etiquetas.length > 0 && (
+                        <div className="flex items-center gap-1 mt-2">
+                          {mensaje.etiquetas.slice(0, 3).map(tag => (
+                            <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">
+                              #{tag.toLowerCase().replace(' ', '')}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Panel de Detalle / Preview */}
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+          {mensajeSeleccionado ? (
+            <>
+              <div className="p-4 border-b border-slate-50" style={{ backgroundColor: tienda.colorSecundario }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${canalIcons[mensajeSeleccionado.canal]?.bg || 'bg-slate-100'}`}>
+                      {React.createElement(canalIcons[mensajeSeleccionado.canal]?.icon || MessageSquare, {
+                        size: 18,
+                        className: canalIcons[mensajeSeleccionado.canal]?.color || 'text-slate-500'
+                      })}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-800">{mensajeSeleccionado.cliente.nombre}</p>
+                      <p className="text-xs text-slate-500 capitalize">{mensajeSeleccionado.canal.replace('_', ' ')}</p>
+                    </div>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full font-semibold ${estadoColors[mensajeSeleccionado.estado].bg} ${estadoColors[mensajeSeleccionado.estado].text}`}>
+                    {estadoColors[mensajeSeleccionado.estado].label}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-4 space-y-4">
+                {/* Info del cliente */}
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase">Información</p>
+                  {mensajeSeleccionado.cliente.email && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail size={14} className="text-slate-400" />
+                      <span className="text-slate-600">{mensajeSeleccionado.cliente.email}</span>
+                    </div>
+                  )}
+                  {mensajeSeleccionado.cliente.telefono && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone size={14} className="text-slate-400" />
+                      <span className="text-slate-600">{mensajeSeleccionado.cliente.telefono}</span>
+                    </div>
+                  )}
+                  {mensajeSeleccionado.pedidoRelacionado && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Package size={14} className="text-slate-400" />
+                      <span className="text-blue-600 font-medium">{mensajeSeleccionado.pedidoRelacionado}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Último mensaje */}
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase">Último mensaje</p>
+                  <div className="p-3 rounded-lg bg-slate-50">
+                    <p className="text-sm text-slate-700">{mensajeSeleccionado.ultimoMensaje}</p>
+                    <p className="text-xs text-slate-400 mt-2">{mensajeSeleccionado.fechaUltimoMensaje} · {mensajeSeleccionado.horaUltimoMensaje}</p>
+                  </div>
+                </div>
+
+                {/* Etiquetas */}
+                {mensajeSeleccionado.etiquetas.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-slate-500 uppercase">Etiquetas</p>
+                    <div className="flex flex-wrap gap-1">
+                      {mensajeSeleccionado.etiquetas.map(tag => (
+                        <span key={tag} className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-600">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Asignación */}
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase">Asignado a</p>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      mensajeSeleccionado.asignado === 'Agente AI' ? 'bg-cyan-50' : 'bg-purple-50'
+                    }`}>
+                      {mensajeSeleccionado.asignado === 'Agente AI' ? (
+                        <Bot size={16} className="text-cyan-600" />
+                      ) : (
+                        <UserCheck size={16} className="text-purple-600" />
+                      )}
+                    </div>
+                    <span className="text-sm font-medium text-slate-700">{mensajeSeleccionado.asignado}</span>
+                  </div>
+                </div>
+
+                {/* Acciones */}
+                <div className="space-y-2 pt-4 border-t border-slate-100">
+                  <button
+                    className="w-full py-2 rounded-lg text-sm font-medium text-white transition-colors flex items-center justify-center gap-2"
+                    style={{ backgroundColor: tienda.color }}
+                  >
+                    <Reply size={16} />
+                    Responder
+                  </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button className="py-2 rounded-lg text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+                      Escalar
+                    </button>
+                    <button className="py-2 rounded-lg text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+                      Cerrar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: tienda.colorSecundario }}>
+                <Inbox size={32} style={{ color: tienda.color }} />
+              </div>
+              <p className="text-slate-600 font-medium mb-1">Seleccioná una conversación</p>
+              <p className="text-sm text-slate-400">Hacé clic en cualquier mensaje para ver los detalles</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
