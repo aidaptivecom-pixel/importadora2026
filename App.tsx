@@ -17,6 +17,7 @@ export type PageType =
   | 'inventario' 
   | 'proveedores'
   // Ventas
+  | 'inbox'
   | 'crm'
   | 'mayoristas' 
   | 'ecommerce' 
@@ -62,6 +63,7 @@ const App: React.FC = () => {
       embarques: 'Embarques',
       inventario: 'Inventario',
       proveedores: 'Proveedores',
+      inbox: 'Inbox',
       crm: 'CRM',
       mayoristas: 'Clientes Mayoristas',
       ecommerce: 'Ecommerce Hub',
@@ -93,6 +95,7 @@ const App: React.FC = () => {
       embarques: 'Operaciones',
       inventario: 'Operaciones',
       proveedores: 'Operaciones',
+      inbox: 'Ventas',
       crm: 'Ventas',
       mayoristas: 'Ventas',
       ecommerce: 'Ventas',

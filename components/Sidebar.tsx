@@ -25,7 +25,9 @@ import {
   BookOpen,
   Sparkles,
   Kanban,
-  FolderKanban
+  FolderKanban,
+  Inbox,
+  Mail
 } from 'lucide-react';
 import { PageType } from '../App';
 
@@ -140,9 +142,18 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
           <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-2">Ventas</h3>
           <nav className="space-y-1">
             <MenuItem 
+              icon={<Inbox size={18} />} 
+              label="Inbox" 
+              badge="4"
+              badgeColor="red"
+              active={currentPage === 'inbox'}
+              onClick={() => onNavigate('inbox')}
+            />
+            <MenuItem 
               icon={<MessageSquare size={18} />} 
               label="CRM" 
               badge="24"
+              badgeColor="blue"
               active={currentPage === 'crm'}
               onClick={() => onNavigate('crm')}
             />
