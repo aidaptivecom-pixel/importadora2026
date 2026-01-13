@@ -2,6 +2,30 @@
 // TIENDAS MINORISTAS - DATOS COMPLETOS
 // ══════════════════════════════════════════════════════════════════════════════
 
+// ══════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS - FECHAS DINÁMICAS
+// ══════════════════════════════════════════════════════════════════════════════
+
+const hoy = new Date();
+
+const diasAtras = (dias: number): Date => {
+  const fecha = new Date(hoy);
+  fecha.setDate(fecha.getDate() - dias);
+  return fecha;
+};
+
+const formatFechaISO = (fecha: Date): string => {
+  return fecha.toISOString().split('T')[0];
+};
+
+const formatFechaCorta = (fecha: Date): string => {
+  return fecha.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INTERFACES
+// ══════════════════════════════════════════════════════════════════════════════
+
 export interface TiendaAgente {
   nombre: string;
   tipo: 'ventas' | 'soporte' | 'postventa';
@@ -122,7 +146,7 @@ export const TIENDAS_MINORISTAS: TiendaMinorista[] = [
     nuevosClientesMes: 67,
     deudaImportadora: 0,
     comprasAcumuladas: 45000,
-    ultimaCompra: '2026-01-08',
+    ultimaCompra: formatFechaISO(diasAtras(5)),
     agentes: [
       { nombre: 'Agente Ventas', tipo: 'ventas', estado: 'activo', precision: 92, conversacionesHoy: 18 },
       { nombre: 'Agente Soporte', tipo: 'soporte', estado: 'activo', precision: 88, conversacionesHoy: 12 },
@@ -165,7 +189,7 @@ export const TIENDAS_MINORISTAS: TiendaMinorista[] = [
     nuevosClientesMes: 45,
     deudaImportadora: 12500,
     comprasAcumuladas: 78000,
-    ultimaCompra: '2026-01-10',
+    ultimaCompra: formatFechaISO(diasAtras(3)),
     agentes: [
       { nombre: 'Agente Ventas', tipo: 'ventas', estado: 'activo', precision: 94, conversacionesHoy: 15 },
       { nombre: 'Agente Soporte', tipo: 'soporte', estado: 'activo', precision: 91, conversacionesHoy: 10 },
@@ -208,7 +232,7 @@ export const TIENDAS_MINORISTAS: TiendaMinorista[] = [
     nuevosClientesMes: 52,
     deudaImportadora: 8200,
     comprasAcumuladas: 32000,
-    ultimaCompra: '2026-01-05',
+    ultimaCompra: formatFechaISO(diasAtras(8)),
     agentes: [
       { nombre: 'Agente Ventas', tipo: 'ventas', estado: 'activo', precision: 90, conversacionesHoy: 10 },
       { nombre: 'Agente Soporte', tipo: 'soporte', estado: 'activo', precision: 86, conversacionesHoy: 7 },
@@ -222,44 +246,46 @@ export const TIENDAS_MINORISTAS: TiendaMinorista[] = [
   }
 ];
 
+// Métricas diarias - últimos 7 días dinámicos
 export const TIENDAS_METRICAS_DIARIAS: Record<string, TiendaMetricaDiaria[]> = {
   'tienda-001': [
-    { fecha: '2026-01-07', ventas: 18, ingresos: 270000, visitas: 1250, conversiones: 1.44 },
-    { fecha: '2026-01-08', ventas: 22, ingresos: 330000, visitas: 1380, conversiones: 1.59 },
-    { fecha: '2026-01-09', ventas: 19, ingresos: 285000, visitas: 1420, conversiones: 1.34 },
-    { fecha: '2026-01-10', ventas: 25, ingresos: 375000, visitas: 1560, conversiones: 1.60 },
-    { fecha: '2026-01-11', ventas: 21, ingresos: 315000, visitas: 1340, conversiones: 1.57 },
-    { fecha: '2026-01-12', ventas: 28, ingresos: 420000, visitas: 1680, conversiones: 1.67 },
-    { fecha: '2026-01-13', ventas: 23, ingresos: 345000, visitas: 1450, conversiones: 1.59 },
+    { fecha: formatFechaISO(diasAtras(6)), ventas: 18, ingresos: 270000, visitas: 1250, conversiones: 1.44 },
+    { fecha: formatFechaISO(diasAtras(5)), ventas: 22, ingresos: 330000, visitas: 1380, conversiones: 1.59 },
+    { fecha: formatFechaISO(diasAtras(4)), ventas: 19, ingresos: 285000, visitas: 1420, conversiones: 1.34 },
+    { fecha: formatFechaISO(diasAtras(3)), ventas: 25, ingresos: 375000, visitas: 1560, conversiones: 1.60 },
+    { fecha: formatFechaISO(diasAtras(2)), ventas: 21, ingresos: 315000, visitas: 1340, conversiones: 1.57 },
+    { fecha: formatFechaISO(diasAtras(1)), ventas: 28, ingresos: 420000, visitas: 1680, conversiones: 1.67 },
+    { fecha: formatFechaISO(hoy), ventas: 23, ingresos: 345000, visitas: 1450, conversiones: 1.59 },
   ],
   'tienda-002': [
-    { fecha: '2026-01-07', ventas: 8, ingresos: 372536, visitas: 890, conversiones: 0.90 },
-    { fecha: '2026-01-08', ventas: 11, ingresos: 512237, visitas: 1020, conversiones: 1.08 },
-    { fecha: '2026-01-09', ventas: 9, ingresos: 419103, visitas: 945, conversiones: 0.95 },
-    { fecha: '2026-01-10', ventas: 12, ingresos: 558804, visitas: 1150, conversiones: 1.04 },
-    { fecha: '2026-01-11', ventas: 7, ingresos: 325969, visitas: 820, conversiones: 0.85 },
-    { fecha: '2026-01-12', ventas: 10, ingresos: 465670, visitas: 980, conversiones: 1.02 },
-    { fecha: '2026-01-13', ventas: 10, ingresos: 465681, visitas: 1100, conversiones: 0.91 },
+    { fecha: formatFechaISO(diasAtras(6)), ventas: 8, ingresos: 372536, visitas: 890, conversiones: 0.90 },
+    { fecha: formatFechaISO(diasAtras(5)), ventas: 11, ingresos: 512237, visitas: 1020, conversiones: 1.08 },
+    { fecha: formatFechaISO(diasAtras(4)), ventas: 9, ingresos: 419103, visitas: 945, conversiones: 0.95 },
+    { fecha: formatFechaISO(diasAtras(3)), ventas: 12, ingresos: 558804, visitas: 1150, conversiones: 1.04 },
+    { fecha: formatFechaISO(diasAtras(2)), ventas: 7, ingresos: 325969, visitas: 820, conversiones: 0.85 },
+    { fecha: formatFechaISO(diasAtras(1)), ventas: 10, ingresos: 465670, visitas: 980, conversiones: 1.02 },
+    { fecha: formatFechaISO(hoy), ventas: 10, ingresos: 465681, visitas: 1100, conversiones: 0.91 },
   ],
   'tienda-003': [
-    { fecha: '2026-01-07', ventas: 11, ingresos: 233596, visitas: 780, conversiones: 1.41 },
-    { fecha: '2026-01-08', ventas: 14, ingresos: 297304, visitas: 890, conversiones: 1.57 },
-    { fecha: '2026-01-09', ventas: 12, ingresos: 254832, visitas: 845, conversiones: 1.42 },
-    { fecha: '2026-01-10', ventas: 15, ingresos: 318540, visitas: 920, conversiones: 1.63 },
-    { fecha: '2026-01-11', ventas: 10, ingresos: 212360, visitas: 710, conversiones: 1.41 },
-    { fecha: '2026-01-12', ventas: 13, ingresos: 276068, visitas: 865, conversiones: 1.50 },
-    { fecha: '2026-01-13', ventas: 14, ingresos: 297300, visitas: 900, conversiones: 1.56 },
+    { fecha: formatFechaISO(diasAtras(6)), ventas: 11, ingresos: 233596, visitas: 780, conversiones: 1.41 },
+    { fecha: formatFechaISO(diasAtras(5)), ventas: 14, ingresos: 297304, visitas: 890, conversiones: 1.57 },
+    { fecha: formatFechaISO(diasAtras(4)), ventas: 12, ingresos: 254832, visitas: 845, conversiones: 1.42 },
+    { fecha: formatFechaISO(diasAtras(3)), ventas: 15, ingresos: 318540, visitas: 920, conversiones: 1.63 },
+    { fecha: formatFechaISO(diasAtras(2)), ventas: 10, ingresos: 212360, visitas: 710, conversiones: 1.41 },
+    { fecha: formatFechaISO(diasAtras(1)), ventas: 13, ingresos: 276068, visitas: 865, conversiones: 1.50 },
+    { fecha: formatFechaISO(hoy), ventas: 14, ingresos: 297300, visitas: 900, conversiones: 1.56 },
   ]
 };
 
+// Alertas con fechas dinámicas
 export const TIENDAS_ALERTAS: TiendaAlerta[] = [
-  { id: 'ALT-001', tiendaId: 'tienda-001', tipo: 'stock', mensaje: '8 productos con stock crítico', prioridad: 'alta', fecha: '2026-01-13', accion: 'Ver productos', estado: 'activa' },
-  { id: 'ALT-002', tiendaId: 'tienda-001', tipo: 'devolucion', mensaje: '2 devoluciones pendientes de procesar', prioridad: 'media', fecha: '2026-01-12', accion: 'Procesar', estado: 'activa' },
-  { id: 'ALT-003', tiendaId: 'tienda-002', tipo: 'garantia', mensaje: '4 reclamos de garantía sin respuesta', prioridad: 'alta', fecha: '2026-01-13', accion: 'Revisar casos', estado: 'activa' },
-  { id: 'ALT-004', tiendaId: 'tienda-002', tipo: 'stock', mensaje: '3 productos sin stock', prioridad: 'alta', fecha: '2026-01-13', accion: 'Reponer', estado: 'activa' },
-  { id: 'ALT-005', tiendaId: 'tienda-003', tipo: 'devolucion', mensaje: '3 devoluciones en proceso', prioridad: 'media', fecha: '2026-01-11', accion: 'Ver estado', estado: 'activa' },
-  { id: 'ALT-006', tiendaId: 'tienda-003', tipo: 'conversion', mensaje: 'Conversión bajó 0.3% vs semana anterior', prioridad: 'baja', fecha: '2026-01-13', accion: 'Analizar', estado: 'activa' },
-  { id: 'ALT-007', tiendaId: 'tienda-001', tipo: 'ventas', mensaje: 'Meta mensual alcanzada al 95%', prioridad: 'baja', fecha: '2026-01-12', accion: 'Ver detalle', estado: 'resuelta' },
+  { id: 'ALT-001', tiendaId: 'tienda-001', tipo: 'stock', mensaje: '8 productos con stock crítico', prioridad: 'alta', fecha: formatFechaCorta(hoy), accion: 'Ver productos', estado: 'activa' },
+  { id: 'ALT-002', tiendaId: 'tienda-001', tipo: 'devolucion', mensaje: '2 devoluciones pendientes de procesar', prioridad: 'media', fecha: formatFechaCorta(diasAtras(1)), accion: 'Procesar', estado: 'activa' },
+  { id: 'ALT-003', tiendaId: 'tienda-002', tipo: 'garantia', mensaje: '4 reclamos de garantía sin respuesta', prioridad: 'alta', fecha: formatFechaCorta(hoy), accion: 'Revisar casos', estado: 'activa' },
+  { id: 'ALT-004', tiendaId: 'tienda-002', tipo: 'stock', mensaje: '3 productos sin stock', prioridad: 'alta', fecha: formatFechaCorta(hoy), accion: 'Reponer', estado: 'activa' },
+  { id: 'ALT-005', tiendaId: 'tienda-003', tipo: 'devolucion', mensaje: '3 devoluciones en proceso', prioridad: 'media', fecha: formatFechaCorta(diasAtras(2)), accion: 'Ver estado', estado: 'activa' },
+  { id: 'ALT-006', tiendaId: 'tienda-003', tipo: 'conversion', mensaje: 'Conversión bajó 0.3% vs semana anterior', prioridad: 'baja', fecha: formatFechaCorta(hoy), accion: 'Analizar', estado: 'activa' },
+  { id: 'ALT-007', tiendaId: 'tienda-001', tipo: 'ventas', mensaje: 'Meta mensual alcanzada al 95%', prioridad: 'baja', fecha: formatFechaCorta(diasAtras(1)), accion: 'Ver detalle', estado: 'resuelta' },
 ];
 
 export const TIENDAS_PROYECCIONES = {
