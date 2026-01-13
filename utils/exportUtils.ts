@@ -107,25 +107,70 @@ export const downloadFile = (content: string, filename: string, mimeType: string
 
 /**
  * Exporta datos a CSV
+ * Soporta dos formatos:
+ * - exportToCSV(data, columns, filename) - formato legacy
+ * - exportToCSV({data, columns}, filename) - formato nuevo
  */
-export const exportToCSV = (
-  data: { data: Record<string, any>[]; columns: ExportColumn[] }, 
-  filename: string
-): void => {
-  const csv = convertToCSV(data.data, data.columns);
-  downloadFile(csv, `${filename}_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
-};
+export function exportToCSV(
+  dataOrWrapped: Record<string, any>[] | { data: Record<string, any>[]; columns: ExportColumn[] },
+  columnsOrFilename: ExportColumn[] | string,
+  filename?: string
+): void {
+  let data: Record<string, any>[];
+  let columns: ExportColumn[];
+  let finalFilename: string;
+
+  // Detect which format is being used
+  if (Array.isArray(dataOrWrapped)) {
+    // Legacy format: exportToCSV(data, columns, filename)
+    data = dataOrWrapped;
+    columns = columnsOrFilename as ExportColumn[];
+    finalFilename = filename || 'export';
+  } else {
+    // New format: exportToCSV({data, columns}, filename)
+    data = dataOrWrapped.data;
+    columns = dataOrWrapped.columns;
+    finalFilename = columnsOrFilename as string;
+  }
+
+  const csv = convertToCSV(data, columns);
+  const dateStr = new Date().toISOString().split('T')[0];
+  const name = finalFilename.includes(dateStr) ? finalFilename : `${finalFilename}_${dateStr}`;
+  downloadFile(csv, `${name}.csv`, 'text/csv');
+}
 
 /**
  * Exporta datos a Excel (formato XML simplificado que Excel puede abrir)
+ * Soporta dos formatos:
+ * - exportToExcel(data, columns, filename, sheetName) - formato legacy
+ * - exportToExcel({data, columns}, filename, sheetName) - formato nuevo
  */
-export const exportToExcel = (
-  data: { data: Record<string, any>[]; columns: ExportColumn[] }, 
-  filename: string,
-  sheetName: string = 'Datos'
-): void => {
-  const { data: rows, columns } = data;
-  
+export function exportToExcel(
+  dataOrWrapped: Record<string, any>[] | { data: Record<string, any>[]; columns: ExportColumn[] },
+  columnsOrFilename: ExportColumn[] | string,
+  filenameOrSheetName?: string,
+  sheetNameLegacy?: string
+): void {
+  let data: Record<string, any>[];
+  let columns: ExportColumn[];
+  let finalFilename: string;
+  let sheetName: string;
+
+  // Detect which format is being used
+  if (Array.isArray(dataOrWrapped)) {
+    // Legacy format: exportToExcel(data, columns, filename, sheetName)
+    data = dataOrWrapped;
+    columns = columnsOrFilename as ExportColumn[];
+    finalFilename = filenameOrSheetName || 'export';
+    sheetName = sheetNameLegacy || 'Datos';
+  } else {
+    // New format: exportToExcel({data, columns}, filename, sheetName)
+    data = dataOrWrapped.data;
+    columns = dataOrWrapped.columns;
+    finalFilename = columnsOrFilename as string;
+    sheetName = filenameOrSheetName || 'Datos';
+  }
+
   // Create Excel XML
   let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <?mso-application progid="Excel.Sheet"?>
@@ -160,7 +205,7 @@ export const exportToExcel = (
   xml += `</Row>`;
 
   // Data rows
-  rows.forEach(row => {
+  data.forEach(row => {
     xml += `<Row>`;
     columns.forEach(col => {
       const value = row[col.key];
@@ -180,8 +225,10 @@ export const exportToExcel = (
 
   xml += `</Table></Worksheet></Workbook>`;
 
-  downloadFile(xml, `${filename}_${new Date().toISOString().split('T')[0]}.xls`, 'application/vnd.ms-excel');
-};
+  const dateStr = new Date().toISOString().split('T')[0];
+  const name = finalFilename.includes(dateStr) ? finalFilename : `${finalFilename}_${dateStr}`;
+  downloadFile(xml, `${name}.xls`, 'application/vnd.ms-excel');
+}
 
 /**
  * Genera nombre de archivo con fecha
