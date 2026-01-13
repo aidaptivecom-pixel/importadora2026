@@ -32,6 +32,11 @@ export type PageType =
   | 'reportes'
   | 'facturacion'
   | 'pagos'
+  // Tiendas Minoristas
+  | 'tiendas-overview'
+  | 'pet-vogue'
+  | 'coresmart'
+  | 'sensuality'
   // Inversores
   | 'inversores'
   // Config
@@ -76,6 +81,10 @@ const App: React.FC = () => {
       reportes: 'Reportes',
       facturacion: 'Facturación',
       pagos: 'Pagos',
+      'tiendas-overview': 'Tiendas Minoristas',
+      'pet-vogue': 'Pet Vogue',
+      'coresmart': 'CoreSmart',
+      'sensuality': 'Sensuality',
       inversores: 'Dashboard Inversores',
       settings: 'Configuración',
       integraciones: 'Integraciones'
@@ -108,6 +117,10 @@ const App: React.FC = () => {
       reportes: 'Finanzas',
       facturacion: 'Finanzas',
       pagos: 'Finanzas',
+      'tiendas-overview': 'Tiendas Minoristas',
+      'pet-vogue': 'Tiendas Minoristas',
+      'coresmart': 'Tiendas Minoristas',
+      'sensuality': 'Tiendas Minoristas',
       inversores: 'Inversores',
       settings: 'Configuración',
       integraciones: 'Configuración'
