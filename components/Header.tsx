@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Bell, Mail, Plus, Download, Calendar, X, Check, CheckCheck,
   Ship, AlertTriangle, DollarSign, Package, FileText, Users, Clock,
   ShoppingCart, MessageSquare, TrendingUp, Settings, ChevronRight
 } from 'lucide-react';
 import { PageType } from '../App';
+import { dropdownVariants, notificationVariants } from '../utils/animations';
 
 // ============ NOTIFICATION TYPES ============
 type NotificationType = 'alerta' | 'embarque' | 'pago' | 'pedido' | 'mensaje' | 'tarea' | 'sistema';
@@ -156,6 +158,21 @@ const timeAgo = (date: Date): string => {
   return date.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
 };
 
+// Notification item animation variant
+const notificationItemVariants = {
+  initial: { opacity: 0, x: -20 },
+  animate: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: {
+      delay: i * 0.05,
+      duration: 0.3,
+      ease: 'easeOut'
+    }
+  }),
+  exit: { opacity: 0, x: 20 }
+};
+
 // ============ NOTIFICATIONS DROPDOWN ============
 interface NotificationsDropdownProps {
   notifications: Notification[];
@@ -194,46 +211,69 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
   };
 
   return (
-    <div 
+    <motion.div 
       ref={dropdownRef}
       className="absolute right-0 top-full mt-2 w-96 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50"
+      variants={dropdownVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
     >
       {/* Header */}
       <div className="p-4 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-slate-800">Notificaciones</h3>
-          {unreadCount > 0 && (
-            <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-semibold rounded-full">
-              {unreadCount} nuevas
-            </span>
-          )}
+          <AnimatePresence>
+            {unreadCount > 0 && (
+              <motion.span 
+                className="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-semibold rounded-full"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+              >
+                {unreadCount} nuevas
+              </motion.span>
+            )}
+          </AnimatePresence>
         </div>
         <div className="flex items-center gap-2">
           {unreadCount > 0 && (
-            <button 
+            <motion.button 
               onClick={onMarkAllAsRead}
               className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               <CheckCheck size={14} />
               Marcar todas
-            </button>
+            </motion.button>
           )}
-          <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-lg transition-colors">
+          <motion.button 
+            onClick={onClose} 
+            className="p-1 hover:bg-slate-100 rounded-lg transition-colors"
+            whileHover={{ rotate: 90 }}
+            transition={{ duration: 0.2 }}
+          >
             <X size={16} className="text-slate-400" />
-          </button>
+          </motion.button>
         </div>
       </div>
 
       {/* Notifications List */}
       <div className="max-h-[400px] overflow-y-auto">
         {notifications.length > 0 ? (
-          notifications.map((notification) => (
-            <div
+          notifications.map((notification, index) => (
+            <motion.div
               key={notification.id}
               onClick={() => handleNotificationClick(notification)}
               className={`p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors ${
                 !notification.leida ? 'bg-blue-50/30' : ''
               }`}
+              variants={notificationItemVariants}
+              initial="initial"
+              animate="animate"
+              custom={index}
+              whileHover={{ x: 4 }}
             >
               <div className="flex gap-3">
                 <NotificationIcon tipo={notification.tipo} />
@@ -242,9 +282,17 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
                     <p className={`text-sm ${!notification.leida ? 'font-semibold text-slate-800' : 'font-medium text-slate-700'}`}>
                       {notification.titulo}
                     </p>
-                    {!notification.leida && (
-                      <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5"></span>
-                    )}
+                    <AnimatePresence>
+                      {!notification.leida && (
+                        <motion.span 
+                          className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          exit={{ scale: 0 }}
+                          transition={{ type: 'spring', stiffness: 500 }}
+                        />
+                      )}
+                    </AnimatePresence>
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{notification.descripcion}</p>
                   <div className="flex items-center justify-between mt-2">
@@ -258,27 +306,40 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))
         ) : (
-          <div className="p-8 text-center">
+          <motion.div 
+            className="p-8 text-center"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
             <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
               <Bell size={24} className="text-slate-400" />
             </div>
             <p className="text-sm text-slate-500">Sin notificaciones</p>
-          </div>
+          </motion.div>
         )}
       </div>
 
       {/* Footer */}
       {notifications.length > 0 && (
-        <div className="p-3 border-t border-slate-100 bg-slate-50">
-          <button className="w-full text-center text-sm text-blue-600 hover:text-blue-700 font-medium py-1.5 hover:bg-white rounded-lg transition-colors">
+        <motion.div 
+          className="p-3 border-t border-slate-100 bg-slate-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <motion.button 
+            className="w-full text-center text-sm text-blue-600 hover:text-blue-700 font-medium py-1.5 hover:bg-white rounded-lg transition-colors"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
             Ver todas las notificaciones
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 
@@ -340,20 +401,43 @@ const Header: React.FC<HeaderProps> = ({ currentPage, pageTitle, breadcrumb, onN
   };
 
   return (
-    <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-100 h-16 px-8 flex items-center justify-between">
+    <motion.header 
+      className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-100 h-16 px-8 flex items-center justify-between"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
       {/* Left: Breadcrumbs */}
       <div className="flex flex-col justify-center">
-        <nav className="text-sm text-slate-500 mb-0.5">
+        <motion.nav 
+          className="text-sm text-slate-500 mb-0.5"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+        >
           <span className="hover:text-slate-800 cursor-pointer transition-colors">{breadcrumb}</span>
           <span className="mx-2">/</span>
-          <span className="text-slate-800 font-medium">{pageTitle}</span>
-        </nav>
+          <motion.span 
+            className="text-slate-800 font-medium"
+            key={pageTitle}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {pageTitle}
+          </motion.span>
+        </motion.nav>
       </div>
 
       {/* Right: Actions */}
       <div className="flex items-center gap-6">
         {/* Search */}
-        <div className="relative group">
+        <motion.div 
+          className="relative group"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+        >
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
             <Search size={16} />
           </div>
@@ -365,71 +449,107 @@ const Header: React.FC<HeaderProps> = ({ currentPage, pageTitle, breadcrumb, onN
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
             <span className="text-xs text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">⌘ K</span>
           </div>
-        </div>
+        </motion.div>
 
         {/* Notifications */}
-        <div className="flex items-center gap-3 border-r border-slate-200 pr-6">
+        <motion.div 
+          className="flex items-center gap-3 border-r border-slate-200 pr-6"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+        >
           {/* Bell - Notifications */}
           <div className="relative">
-            <button 
+            <motion.button 
               onClick={() => setShowNotifications(!showNotifications)}
               className={`relative p-2 rounded-full transition-colors ${
                 showNotifications 
                   ? 'text-blue-600 bg-blue-50' 
                   : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
               }`}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
             >
               <Bell size={20} />
-              {unreadAlerts > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-pulse">
-                  {unreadAlerts > 9 ? '9+' : unreadAlerts}
-                </span>
-              )}
-            </button>
+              <AnimatePresence>
+                {unreadAlerts > 0 && (
+                  <motion.span 
+                    className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    transition={{ type: 'spring', stiffness: 500 }}
+                  >
+                    {unreadAlerts > 9 ? '9+' : unreadAlerts}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
 
             {/* Dropdown */}
-            {showNotifications && (
-              <NotificationsDropdown
-                notifications={notifications}
-                onClose={() => setShowNotifications(false)}
-                onMarkAsRead={handleMarkAsRead}
-                onMarkAllAsRead={handleMarkAllAsRead}
-                onNavigate={onNavigate}
-              />
-            )}
+            <AnimatePresence>
+              {showNotifications && (
+                <NotificationsDropdown
+                  notifications={notifications}
+                  onClose={() => setShowNotifications(false)}
+                  onMarkAsRead={handleMarkAsRead}
+                  onMarkAllAsRead={handleMarkAllAsRead}
+                  onNavigate={onNavigate}
+                />
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Mail - Messages */}
-          <button 
+          <motion.button 
             className="relative p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors"
             onClick={() => onNavigate?.('inbox')}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
             <Mail size={20} />
             {messagesCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-blue-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+              <motion.span 
+                className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-blue-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 500, delay: 0.5 }}
+              >
                 {messagesCount > 9 ? '9+' : messagesCount}
-              </span>
+              </motion.span>
             )}
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
 
         {/* User & Action */}
-        <div className="flex items-center gap-4">
-          <div className="relative group">
+        <motion.div 
+          className="flex items-center gap-4"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <motion.div 
+            className="relative group"
+            whileHover={{ scale: 1.05 }}
+          >
             <img 
               src="https://i.pravatar.cc/32?img=12" 
               alt="User" 
               className="w-9 h-9 rounded-full ring-2 ring-white shadow-sm cursor-pointer hover:ring-blue-200 transition-all"
             />
             <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
-          </div>
-          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm shadow-blue-200 transition-all active:scale-95">
+          </motion.div>
+          <motion.button 
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm shadow-blue-200 transition-all"
+            whileHover={{ scale: 1.05, boxShadow: '0 8px 20px -6px rgba(59, 130, 246, 0.5)' }}
+            whileTap={{ scale: 0.95 }}
+          >
             <ActionIcon size={16} />
             {action.label}
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       </div>
-    </header>
+    </motion.header>
   );
 };
 
