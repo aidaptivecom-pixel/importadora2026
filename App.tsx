@@ -23,8 +23,13 @@ export type PageType =
   | 'ecommerce' 
   | 'pedidos' 
   | 'cobranzas'
-  // Marketing
+  // Marketing Central
   | 'marketing'
+  | 'marketing-calendario'
+  | 'marketing-avatares'
+  | 'marketing-generador'
+  | 'marketing-campanas'
+  | 'marketing-assets'
   | 'contenido'
   | 'avatar'
   | 'analytics'
@@ -74,7 +79,12 @@ const App: React.FC = () => {
       ecommerce: 'Ecommerce Hub',
       pedidos: 'Pedidos',
       cobranzas: 'Cobranzas',
-      marketing: 'Marketing Hub',
+      marketing: 'Marketing Central',
+      'marketing-calendario': 'Calendario Editorial',
+      'marketing-avatares': 'Avatares Digitales',
+      'marketing-generador': 'Generador de Contenido',
+      'marketing-campanas': 'Campañas',
+      'marketing-assets': 'Biblioteca de Assets',
       contenido: 'Contenido',
       avatar: 'Avatar Digital',
       analytics: 'Analytics',
@@ -110,7 +120,12 @@ const App: React.FC = () => {
       ecommerce: 'Ventas',
       pedidos: 'Ventas',
       cobranzas: 'Ventas',
-      marketing: 'Marketing',
+      marketing: 'Marketing Central',
+      'marketing-calendario': 'Marketing Central',
+      'marketing-avatares': 'Marketing Central',
+      'marketing-generador': 'Marketing Central',
+      'marketing-campanas': 'Marketing Central',
+      'marketing-assets': 'Marketing Central',
       contenido: 'Marketing',
       avatar: 'Marketing',
       analytics: 'Marketing',
