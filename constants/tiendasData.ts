@@ -346,3 +346,410 @@ export const SOLICITUDES_REPOSICION: Record<string, SolicitudReposicion[]> = {
     { id: 'SOL-SN-001', fecha: '2026-01-12', productos: [{ sku: 'SN-LEN-LUX', nombre: 'Lencería Set Luxury', cantidad: 10, urgencia: 'normal' }, { sku: 'SN-COL-BIE', nombre: 'Colección Bienestar Completa', cantidad: 5, urgencia: 'normal' }], estado: 'enviada', montoEstimado: 1040000, fechaEstimadaEntrega: '2026-01-15' },
   ]
 };
+
+// ============ INBOX UNIFICADO MULTICANAL ============
+export interface MensajeInbox {
+  id: string;
+  conversacionId: string;
+  canal: 'whatsapp' | 'instagram' | 'mercadolibre' | 'email' | 'web_chat' | 'facebook';
+  cliente: {
+    id: string;
+    nombre: string;
+    avatar?: string;
+    telefono?: string;
+    email?: string;
+  };
+  asunto?: string;
+  ultimoMensaje: string;
+  fechaUltimoMensaje: string;
+  horaUltimoMensaje: string;
+  estado: 'nuevo' | 'en_proceso' | 'respondido' | 'cerrado' | 'esperando_cliente';
+  prioridad: 'alta' | 'media' | 'baja';
+  asignado: 'Agente AI' | 'Soporte Humano' | 'Sin asignar';
+  etiquetas: string[];
+  mensajesSinLeer: number;
+  tiempoEspera?: number; // minutos
+  pedidoRelacionado?: string;
+  sentimiento?: 'positivo' | 'neutral' | 'negativo';
+}
+
+export interface ConversacionDetalle {
+  id: string;
+  mensajes: {
+    id: string;
+    tipo: 'entrante' | 'saliente';
+    contenido: string;
+    fecha: string;
+    hora: string;
+    autor: string;
+    leido: boolean;
+  }[];
+}
+
+export const INBOX_TIENDA: Record<string, MensajeInbox[]> = {
+  'pet-vogue': [
+    {
+      id: 'INB-PV-001',
+      conversacionId: 'CONV-PV-001',
+      canal: 'whatsapp',
+      cliente: { id: 'CLI-PV-001', nombre: 'María González', telefono: '+54 11 5555-1234' },
+      ultimoMensaje: 'Hola! Quería consultar si tienen stock del collar GPS en color negro. Gracias!',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '10:45',
+      estado: 'nuevo',
+      prioridad: 'alta',
+      asignado: 'Agente AI',
+      etiquetas: ['Consulta stock', 'VIP'],
+      mensajesSinLeer: 1,
+      tiempoEspera: 5,
+      sentimiento: 'positivo'
+    },
+    {
+      id: 'INB-PV-002',
+      conversacionId: 'CONV-PV-002',
+      canal: 'instagram',
+      cliente: { id: 'CLI-PV-NEW-01', nombre: 'Luciana_pets', avatar: '🐕' },
+      ultimoMensaje: 'Me encantó la cama que compraron mis amigos para su golden! Envían a zona sur?',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '10:32',
+      estado: 'en_proceso',
+      prioridad: 'media',
+      asignado: 'Agente AI',
+      etiquetas: ['Nuevo cliente', 'Envíos'],
+      mensajesSinLeer: 0,
+      tiempoEspera: 18,
+      sentimiento: 'positivo'
+    },
+    {
+      id: 'INB-PV-003',
+      conversacionId: 'CONV-PV-003',
+      canal: 'mercadolibre',
+      cliente: { id: 'CLI-PV-002', nombre: 'Carlos Rodríguez', email: 'carlos.r@email.com' },
+      asunto: 'Pregunta sobre Arnés Antitirones M',
+      ultimoMensaje: 'Sirve para un labrador de 30kg? Necesito saber antes de comprarlo',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '09:58',
+      estado: 'respondido',
+      prioridad: 'media',
+      asignado: 'Agente AI',
+      etiquetas: ['Pre-venta', 'MercadoLibre'],
+      mensajesSinLeer: 0,
+      pedidoRelacionado: 'PV-001233',
+      sentimiento: 'neutral'
+    },
+    {
+      id: 'INB-PV-004',
+      conversacionId: 'CONV-PV-004',
+      canal: 'email',
+      cliente: { id: 'CLI-PV-003', nombre: 'Ana Martínez', email: 'ana.m@email.com' },
+      asunto: 'RE: Seguimiento de mi pedido PV-001232',
+      ultimoMensaje: 'Perfecto, gracias por la info! Quedo atenta al tracking.',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '09:15',
+      estado: 'cerrado',
+      prioridad: 'baja',
+      asignado: 'Agente AI',
+      etiquetas: ['Seguimiento', 'Resuelto'],
+      mensajesSinLeer: 0,
+      pedidoRelacionado: 'PV-001232',
+      sentimiento: 'positivo'
+    },
+    {
+      id: 'INB-PV-005',
+      conversacionId: 'CONV-PV-005',
+      canal: 'whatsapp',
+      cliente: { id: 'CLI-PV-006', nombre: 'Roberto Sánchez', telefono: '+54 11 5555-6789' },
+      ultimoMensaje: 'Necesito cancelar mi pedido URGENTE. No me contestan!!',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '08:22',
+      estado: 'en_proceso',
+      prioridad: 'alta',
+      asignado: 'Soporte Humano',
+      etiquetas: ['Cancelación', 'Urgente', 'Escalado'],
+      mensajesSinLeer: 3,
+      tiempoEspera: 148,
+      pedidoRelacionado: 'PV-001229',
+      sentimiento: 'negativo'
+    },
+    {
+      id: 'INB-PV-006',
+      conversacionId: 'CONV-PV-006',
+      canal: 'web_chat',
+      cliente: { id: 'CLI-PV-NEW-02', nombre: 'Visitante Web', avatar: '👤' },
+      ultimoMensaje: 'Tienen descuento por cantidad? Quiero comprar 5 camas para mi guardería canina',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '10:52',
+      estado: 'nuevo',
+      prioridad: 'alta',
+      asignado: 'Agente AI',
+      etiquetas: ['Mayorista', 'Oportunidad'],
+      mensajesSinLeer: 1,
+      tiempoEspera: 2,
+      sentimiento: 'positivo'
+    },
+    {
+      id: 'INB-PV-007',
+      conversacionId: 'CONV-PV-007',
+      canal: 'instagram',
+      cliente: { id: 'CLI-PV-004', nombre: 'Diego López', avatar: '🐾' },
+      ultimoMensaje: 'Genial el servicio! Ya llegó mi transportadora. 10 puntos 👏',
+      fechaUltimoMensaje: '2026-01-12',
+      horaUltimoMensaje: '18:45',
+      estado: 'cerrado',
+      prioridad: 'baja',
+      asignado: 'Agente AI',
+      etiquetas: ['Feedback positivo', 'NPS'],
+      mensajesSinLeer: 0,
+      pedidoRelacionado: 'PV-001231',
+      sentimiento: 'positivo'
+    },
+    {
+      id: 'INB-PV-008',
+      conversacionId: 'CONV-PV-008',
+      canal: 'facebook',
+      cliente: { id: 'CLI-PV-NEW-03', nombre: 'Mariana B.', avatar: '🐱' },
+      ultimoMensaje: 'El comedero sirve para gatos? O es solo para perros?',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '07:30',
+      estado: 'esperando_cliente',
+      prioridad: 'media',
+      asignado: 'Agente AI',
+      etiquetas: ['Consulta producto'],
+      mensajesSinLeer: 0,
+      tiempoEspera: 0,
+      sentimiento: 'neutral'
+    }
+  ],
+  'coresmart': [
+    {
+      id: 'INB-CS-001',
+      conversacionId: 'CONV-CS-001',
+      canal: 'whatsapp',
+      cliente: { id: 'CLI-CS-001', nombre: 'TechSoft SA', telefono: '+54 11 4444-1111', email: 'compras@techsoft.com' },
+      ultimoMensaje: 'Necesitamos cotización para 20 Smart Hubs y 50 sensores. Es para un proyecto corporativo.',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '11:02',
+      estado: 'nuevo',
+      prioridad: 'alta',
+      asignado: 'Agente AI',
+      etiquetas: ['B2B', 'VIP', 'Cotización'],
+      mensajesSinLeer: 1,
+      tiempoEspera: 3,
+      sentimiento: 'neutral'
+    },
+    {
+      id: 'INB-CS-002',
+      conversacionId: 'CONV-CS-002',
+      canal: 'mercadolibre',
+      cliente: { id: 'CLI-CS-002', nombre: 'Martín Aguirre', email: 'martin.a@email.com' },
+      asunto: 'Consulta sobre Cámara IP 360° 4K',
+      ultimoMensaje: 'Tiene visión nocturna? Cuántos metros de alcance?',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '10:28',
+      estado: 'respondido',
+      prioridad: 'media',
+      asignado: 'Agente AI',
+      etiquetas: ['Pre-venta', 'Especificaciones'],
+      mensajesSinLeer: 0,
+      sentimiento: 'neutral'
+    },
+    {
+      id: 'INB-CS-003',
+      conversacionId: 'CONV-CS-003',
+      canal: 'email',
+      cliente: { id: 'CLI-CS-003', nombre: 'Inmobiliaria Norte', email: 'admin@inmobiliarianorte.com' },
+      asunto: 'Soporte técnico - Timbres no funcionan correctamente',
+      ultimoMensaje: '3 de los 8 timbres instalados tienen delay en la notificación. Necesitamos solución urgente.',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '09:45',
+      estado: 'en_proceso',
+      prioridad: 'alta',
+      asignado: 'Soporte Humano',
+      etiquetas: ['Soporte técnico', 'VIP', 'Urgente'],
+      mensajesSinLeer: 2,
+      tiempoEspera: 75,
+      pedidoRelacionado: 'CS-002152',
+      sentimiento: 'negativo'
+    },
+    {
+      id: 'INB-CS-004',
+      conversacionId: 'CONV-CS-004',
+      canal: 'web_chat',
+      cliente: { id: 'CLI-CS-NEW-01', nombre: 'Visitante Web', avatar: '👤' },
+      ultimoMensaje: 'La cerradura smart es compatible con Google Home?',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '10:55',
+      estado: 'nuevo',
+      prioridad: 'media',
+      asignado: 'Agente AI',
+      etiquetas: ['Compatibilidad', 'Pre-venta'],
+      mensajesSinLeer: 1,
+      tiempoEspera: 1,
+      sentimiento: 'neutral'
+    },
+    {
+      id: 'INB-CS-005',
+      conversacionId: 'CONV-CS-005',
+      canal: 'instagram',
+      cliente: { id: 'CLI-CS-004', nombre: 'Lucía Pereyra', avatar: '💡' },
+      ultimoMensaje: 'Mil gracias por el kit de iluminación! Quedó increíble mi depto 🙌',
+      fechaUltimoMensaje: '2026-01-12',
+      horaUltimoMensaje: '20:12',
+      estado: 'cerrado',
+      prioridad: 'baja',
+      asignado: 'Agente AI',
+      etiquetas: ['Feedback positivo'],
+      mensajesSinLeer: 0,
+      pedidoRelacionado: 'CS-002154',
+      sentimiento: 'positivo'
+    },
+    {
+      id: 'INB-CS-006',
+      conversacionId: 'CONV-CS-006',
+      canal: 'whatsapp',
+      cliente: { id: 'CLI-CS-005', nombre: 'Federico Torres', telefono: '+54 11 4444-5555' },
+      ultimoMensaje: 'Cómo hago para agregar más huellas a la cerradura? El manual no es muy claro',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '08:15',
+      estado: 'esperando_cliente',
+      prioridad: 'media',
+      asignado: 'Agente AI',
+      etiquetas: ['Soporte', 'Tutorial'],
+      mensajesSinLeer: 0,
+      pedidoRelacionado: 'CS-002153',
+      sentimiento: 'neutral'
+    }
+  ],
+  'sensuality': [
+    {
+      id: 'INB-SN-001',
+      conversacionId: 'CONV-SN-001',
+      canal: 'whatsapp',
+      cliente: { id: 'CLI-SN-001', nombre: 'Cliente Premium #101', telefono: 'Privado' },
+      ultimoMensaje: 'Tienen novedades para San Valentín? Me interesa algo especial',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '10:38',
+      estado: 'en_proceso',
+      prioridad: 'alta',
+      asignado: 'Agente AI',
+      etiquetas: ['VIP', 'San Valentín'],
+      mensajesSinLeer: 0,
+      tiempoEspera: 12,
+      sentimiento: 'positivo'
+    },
+    {
+      id: 'INB-SN-002',
+      conversacionId: 'CONV-SN-002',
+      canal: 'web_chat',
+      cliente: { id: 'CLI-SN-NEW-01', nombre: 'Visitante Anónimo', avatar: '👤' },
+      ultimoMensaje: 'El envío es discreto? No quiero que figure el nombre de la tienda en el paquete',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '10:48',
+      estado: 'nuevo',
+      prioridad: 'media',
+      asignado: 'Agente AI',
+      etiquetas: ['Envío discreto', 'Nuevo cliente'],
+      mensajesSinLeer: 1,
+      tiempoEspera: 6,
+      sentimiento: 'neutral'
+    },
+    {
+      id: 'INB-SN-003',
+      conversacionId: 'CONV-SN-003',
+      canal: 'instagram',
+      cliente: { id: 'CLI-SN-002', nombre: 'Cliente Premium #102', avatar: '💜' },
+      ultimoMensaje: 'Los aceites nuevos tienen aroma a lavanda? Es mi favorito',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '09:22',
+      estado: 'respondido',
+      prioridad: 'media',
+      asignado: 'Agente AI',
+      etiquetas: ['Productos', 'Frecuente'],
+      mensajesSinLeer: 0,
+      sentimiento: 'positivo'
+    },
+    {
+      id: 'INB-SN-004',
+      conversacionId: 'CONV-SN-004',
+      canal: 'email',
+      cliente: { id: 'CLI-SN-004', nombre: 'Cliente #4520', email: 'privado2@email.com' },
+      asunto: 'Consulta sobre mi pedido SN-003088',
+      ultimoMensaje: 'Cuándo estiman que llegue? Necesito que sea antes del viernes.',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '08:55',
+      estado: 'en_proceso',
+      prioridad: 'alta',
+      asignado: 'Agente AI',
+      etiquetas: ['Seguimiento', 'Urgente'],
+      mensajesSinLeer: 1,
+      tiempoEspera: 65,
+      pedidoRelacionado: 'SN-003088',
+      sentimiento: 'neutral'
+    },
+    {
+      id: 'INB-SN-005',
+      conversacionId: 'CONV-SN-005',
+      canal: 'whatsapp',
+      cliente: { id: 'CLI-SN-003', nombre: 'Cliente #4521', telefono: 'Privado' },
+      ultimoMensaje: 'Perfecto, ya realicé el pago. Me avisan cuando despachen?',
+      fechaUltimoMensaje: '2026-01-13',
+      horaUltimoMensaje: '07:40',
+      estado: 'cerrado',
+      prioridad: 'baja',
+      asignado: 'Agente AI',
+      etiquetas: ['Pago confirmado'],
+      mensajesSinLeer: 0,
+      pedidoRelacionado: 'SN-003089',
+      sentimiento: 'positivo'
+    }
+  ]
+};
+
+// Estadísticas de Inbox por tienda
+export interface InboxStats {
+  totalConversaciones: number;
+  nuevas: number;
+  enProceso: number;
+  esperandoCliente: number;
+  cerradas: number;
+  tiempoPromedioRespuesta: number; // minutos
+  resolucionPrimerContacto: number; // porcentaje
+  satisfaccionPromedio: number;
+  porCanal: Record<string, number>;
+}
+
+export const INBOX_STATS: Record<string, InboxStats> = {
+  'pet-vogue': {
+    totalConversaciones: 8,
+    nuevas: 2,
+    enProceso: 2,
+    esperandoCliente: 1,
+    cerradas: 3,
+    tiempoPromedioRespuesta: 12,
+    resolucionPrimerContacto: 78,
+    satisfaccionPromedio: 4.6,
+    porCanal: { whatsapp: 3, instagram: 2, mercadolibre: 1, email: 1, web_chat: 1, facebook: 1 }
+  },
+  'coresmart': {
+    totalConversaciones: 6,
+    nuevas: 2,
+    enProceso: 1,
+    esperandoCliente: 1,
+    cerradas: 2,
+    tiempoPromedioRespuesta: 18,
+    resolucionPrimerContacto: 72,
+    satisfaccionPromedio: 4.5,
+    porCanal: { whatsapp: 2, mercadolibre: 1, email: 1, web_chat: 1, instagram: 1 }
+  },
+  'sensuality': {
+    totalConversaciones: 5,
+    nuevas: 1,
+    enProceso: 2,
+    esperandoCliente: 0,
+    cerradas: 2,
+    tiempoPromedioRespuesta: 8,
+    resolucionPrimerContacto: 85,
+    satisfaccionPromedio: 4.8,
+    porCanal: { whatsapp: 2, web_chat: 1, instagram: 1, email: 1 }
+  }
+};
