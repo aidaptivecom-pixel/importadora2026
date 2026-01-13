@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Package, 
   Search, 
@@ -26,9 +26,12 @@ import {
   Phone,
   Mail,
   Copy,
-  Printer
+  Printer,
+  FileSpreadsheet,
+  Table
 } from 'lucide-react';
 import EmptyState from './EmptyState';
+import { exportToCSV, exportToExcel, generateFilename } from '../utils/exportUtils';
 
 interface Pedido {
   id: string;
@@ -56,6 +59,19 @@ const PedidosPage: React.FC = () => {
   const [filterEstado, setFilterEstado] = useState<string>('todos');
   const [filterOrigen, setFilterOrigen] = useState<string>('todos');
   const [selectedPedido, setSelectedPedido] = useState<Pedido | null>(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close export menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
+        setShowExportMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Mock data - Pedidos mayoristas
   const pedidos: Pedido[] = [
@@ -323,6 +339,55 @@ const PedidosPage: React.FC = () => {
     setFilterOrigen('todos');
   };
 
+  // Export functions
+  const exportColumns = [
+    { key: 'numero', header: 'Número Pedido' },
+    { key: 'empresa', header: 'Empresa' },
+    { key: 'cliente', header: 'Contacto' },
+    { key: 'email', header: 'Email' },
+    { key: 'telefono', header: 'Teléfono' },
+    { key: 'categoria', header: 'Categoría' },
+    { key: 'fecha', header: 'Fecha Pedido' },
+    { key: 'fechaEntrega', header: 'Fecha Entrega' },
+    { key: 'estado', header: 'Estado' },
+    { key: 'items', header: 'Items' },
+    { key: 'total', header: 'Total' },
+    { key: 'formaPago', header: 'Forma de Pago' },
+    { key: 'origen', header: 'Canal' },
+    { key: 'prioridad', header: 'Prioridad' },
+    { key: 'notas', header: 'Notas' }
+  ];
+
+  const prepareExportData = () => {
+    return filteredPedidos.map(p => ({
+      numero: p.numero,
+      empresa: p.cliente.empresa,
+      cliente: p.cliente.nombre,
+      email: p.cliente.email,
+      telefono: p.cliente.telefono,
+      categoria: p.cliente.categoria,
+      fecha: p.fecha,
+      fechaEntrega: p.fechaEntrega,
+      estado: getEstadoConfig(p.estado).label,
+      items: p.items,
+      total: p.total,
+      formaPago: p.formaPago,
+      origen: p.origen.charAt(0).toUpperCase() + p.origen.slice(1),
+      prioridad: p.prioridad.charAt(0).toUpperCase() + p.prioridad.slice(1),
+      notas: p.notas || ''
+    }));
+  };
+
+  const handleExportCSV = () => {
+    exportToCSV(prepareExportData(), exportColumns, generateFilename('pedidos'));
+    setShowExportMenu(false);
+  };
+
+  const handleExportExcel = () => {
+    exportToExcel(prepareExportData(), exportColumns, generateFilename('pedidos'), 'Pedidos');
+    setShowExportMenu(false);
+  };
+
   return (
     <div className="space-y-6">
       {/* KPIs */}
@@ -479,10 +544,37 @@ const PedidosPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
-              <Download size={18} />
-              <span className="text-sm font-medium">Exportar</span>
-            </button>
+            {/* Export Dropdown */}
+            <div className="relative" ref={exportMenuRef}>
+              <button 
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="flex items-center gap-2 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+              >
+                <Download size={18} />
+                <span className="text-sm font-medium">Exportar</span>
+                <ChevronDown size={14} className={`transition-transform ${showExportMenu ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {showExportMenu && (
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-20">
+                  <button
+                    onClick={handleExportExcel}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <FileSpreadsheet size={16} className="text-emerald-600" />
+                    Exportar a Excel
+                  </button>
+                  <button
+                    onClick={handleExportCSV}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <Table size={16} className="text-blue-600" />
+                    Exportar a CSV
+                  </button>
+                </div>
+              )}
+            </div>
+            
             <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
               <Plus size={18} />
               <span className="text-sm font-medium">Nuevo Pedido</span>
