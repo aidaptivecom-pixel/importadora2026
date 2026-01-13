@@ -22,7 +22,8 @@ import {
   Palette,
   Layout,
   Music,
-  File
+  File,
+  X
 } from 'lucide-react';
 import { PageType } from '../../App';
 
@@ -41,7 +42,6 @@ interface Asset {
   fechaSubida: string;
   usos: number;
   favorito: boolean;
-  preview?: string;
 }
 
 const ASSETS: Asset[] = [
@@ -112,7 +112,6 @@ const AssetsPage: React.FC<AssetsPageProps> = ({ onNavigate }) => {
     }
   };
 
-  // Calcular espacio usado por tienda
   const espacioPorTienda = {
     'Pet Vogue': ASSETS.filter(a => a.tienda === 'Pet Vogue').reduce((acc, a) => acc + parseFloat(a.tamano), 0),
     'CoreSmart': ASSETS.filter(a => a.tienda === 'CoreSmart').reduce((acc, a) => acc + parseFloat(a.tamano), 0),
@@ -306,12 +305,140 @@ const AssetsPage: React.FC<AssetsPageProps> = ({ onNavigate }) => {
                     </div>
                   </div>
                   <div className="p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-sm font-medium text-slate-800 line-clamp-1">{asset.nombre}</h3>
-                    </div>
+                    <h3 className="text-sm font-medium text-slate-800 line-clamp-1 mb-2">{asset.nombre}</h3>
                     <div className="flex items-center justify-between text-xs text-slate-500">
                       <span>{asset.tiendaEmoji} {asset.tienda}</span>
                       <span>{asset.tamano}</span>
                     </div>
                     <div className="flex items-center gap-2 mt-2 text-xs text-slate-400">
-                      <span className="flex items-center gap-1"><Eye size={10} /> {asset.u
+                      <span className="flex items-center gap-1"><Eye size={10} /> {asset.usos} usos</span>
+                      <span>•</span>
+                      <span>{asset.categoria}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase">
+                  <tr>
+                    <th className="p-4">Asset</th>
+                    <th className="p-4">Marca</th>
+                    <th className="p-4">Categoría</th>
+                    <th className="p-4">Tamaño</th>
+                    <th className="p-4">Usos</th>
+                    <th className="p-4">Fecha</th>
+                    <th className="p-4"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 text-sm">
+                  {assetsFiltrados.map((asset) => (
+                    <tr key={asset.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-lg ${getTipoColor(asset.tipo)} flex items-center justify-center`}>
+                            {getTipoIcon(asset.tipo)}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-slate-800">{asset.nombre}</span>
+                            {asset.favorito && <Star size={12} className="text-amber-500 fill-amber-500" />}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4 text-slate-600">{asset.tiendaEmoji} {asset.tienda}</td>
+                      <td className="p-4 text-slate-600">{asset.categoria}</td>
+                      <td className="p-4 text-slate-600">{asset.tamano}</td>
+                      <td className="p-4 text-slate-600">{asset.usos}</td>
+                      <td className="p-4 text-slate-500">{new Date(asset.fechaSubida).toLocaleDateString('es-AR')}</td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-1">
+                          <button className="p-1.5 hover:bg-slate-100 rounded text-slate-400">
+                            <Download size={14} />
+                          </button>
+                          <button className="p-1.5 hover:bg-slate-100 rounded text-slate-400">
+                            <MoreHorizontal size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modal de Detalle */}
+      {assetSeleccionado && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setAssetSeleccionado(null)}>
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className={`h-48 ${getTipoColor(assetSeleccionado.tipo)} flex items-center justify-center relative`}>
+              {getTipoIcon(assetSeleccionado.tipo)}
+              <button 
+                onClick={() => setAssetSeleccionado(null)}
+                className="absolute top-4 right-4 p-2 bg-white/80 hover:bg-white rounded-lg transition-colors"
+              >
+                <X size={16} className="text-slate-600" />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-800">{assetSeleccionado.nombre}</h2>
+                  <p className="text-sm text-slate-500">{assetSeleccionado.tiendaEmoji} {assetSeleccionado.tienda}</p>
+                </div>
+                {assetSeleccionado.favorito && (
+                  <Star size={20} className="text-amber-500 fill-amber-500" />
+                )}
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm mb-6">
+                <div>
+                  <p className="text-slate-500">Tipo</p>
+                  <p className="font-medium text-slate-800 capitalize">{assetSeleccionado.tipo}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Categoría</p>
+                  <p className="font-medium text-slate-800">{assetSeleccionado.categoria}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Tamaño</p>
+                  <p className="font-medium text-slate-800">{assetSeleccionado.tamano}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Usos</p>
+                  <p className="font-medium text-slate-800">{assetSeleccionado.usos}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Fecha de subida</p>
+                  <p className="font-medium text-slate-800">{new Date(assetSeleccionado.fechaSubida).toLocaleDateString('es-AR')}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <button className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors">
+                  <Download size={16} />
+                  Descargar
+                </button>
+                <button className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+                  <Copy size={16} className="text-slate-600" />
+                </button>
+                <button className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+                  <Star size={16} className={assetSeleccionado.favorito ? 'text-amber-500 fill-amber-500' : 'text-slate-600'} />
+                </button>
+                <button className="p-2.5 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                  <Trash2 size={16} className="text-red-600" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AssetsPage;
