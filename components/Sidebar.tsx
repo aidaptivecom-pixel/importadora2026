@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { 
   LayoutDashboard, 
   Container, 
@@ -43,6 +43,7 @@ import {
   Palette
 } from 'lucide-react';
 import { PageType } from '../App';
+import { getSidebarBadges, shouldShowBadge, getBadgeUrgency, BadgeUrgency } from '../utils/badgeData';
 
 interface SidebarProps {
   currentPage: PageType;
@@ -50,6 +51,9 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
+  // Get dynamic badge counts
+  const badges = useMemo(() => getSidebarBadges(), []);
+
   return (
     <aside className="fixed left-4 top-4 h-[calc(100vh-32px)] w-64 bg-white border-r border-slate-100 flex flex-col z-20 rounded-l-2xl">
       {/* Header Logo */}
@@ -91,7 +95,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
               label="Tareas" 
               active={currentPage === 'tareas'}
               onClick={() => onNavigate('tareas')}
-              badge="5"
+              badge={shouldShowBadge(badges.tareas) ? badges.tareas.toString() : undefined}
+              badgeUrgency={getBadgeUrgency('tareas', badges.tareas)}
             />
             <MenuItem 
               icon={<BookOpen size={18} />} 
@@ -120,7 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
               label="Tablero" 
               active={currentPage === 'tablero'}
               onClick={() => onNavigate('tablero')}
-              badge="9"
+              badge={shouldShowBadge(badges.tablero) ? badges.tablero.toString() : undefined}
               badgeColor="blue"
             />
             <MenuItem 
@@ -157,15 +162,16 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
             <MenuItem 
               icon={<Inbox size={18} />} 
               label="Inbox" 
-              badge="4"
+              badge={shouldShowBadge(badges.inbox) ? badges.inbox.toString() : undefined}
               badgeColor="red"
+              badgeUrgency={getBadgeUrgency('inbox', badges.inbox)}
               active={currentPage === 'inbox'}
               onClick={() => onNavigate('inbox')}
             />
             <MenuItem 
               icon={<MessageSquare size={18} />} 
               label="CRM" 
-              badge="24"
+              badge={shouldShowBadge(badges.crm) ? badges.crm.toString() : undefined}
               badgeColor="blue"
               active={currentPage === 'crm'}
               onClick={() => onNavigate('crm')}
@@ -193,7 +199,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
               label="Cobranzas" 
               active={currentPage === 'cobranzas'}
               onClick={() => onNavigate('cobranzas')}
-              badge="3"
+              badge={shouldShowBadge(badges.cobranzas) ? badges.cobranzas.toString() : undefined}
+              badgeColor="red"
+              badgeUrgency={getBadgeUrgency('cobranzas', badges.cobranzas)}
             />
           </nav>
         </div>
@@ -207,7 +215,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
               label="Vista General" 
               active={currentPage === 'tiendas-overview'}
               onClick={() => onNavigate('tiendas-overview')}
-              badge="3"
+              badge={shouldShowBadge(badges.tiendasOverview) ? badges.tiendasOverview.toString() : undefined}
               badgeColor="green"
             />
             <MenuItem 
@@ -274,7 +282,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
               label="Campañas" 
               active={currentPage === 'marketing-campanas'}
               onClick={() => onNavigate('marketing-campanas')}
-              badge="5"
+              badge={shouldShowBadge(badges.marketingCampanas) ? badges.marketingCampanas.toString() : undefined}
               badgeColor="blue"
               indent
             />
@@ -304,7 +312,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
               label="Centro de Agentes" 
               active={currentPage === 'agentes-centro'}
               onClick={() => onNavigate('agentes-centro')}
-              badge="5"
+              badge={shouldShowBadge(badges.agentesCentro) ? badges.agentesCentro.toString() : undefined}
               badgeColor="purple"
             />
             <MenuItem 
@@ -312,7 +320,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
               label="Agente Ventas" 
               active={currentPage === 'agente-ventas'}
               onClick={() => onNavigate('agente-ventas')}
-              badge="85"
+              badge={shouldShowBadge(badges.agenteVentas) ? badges.agenteVentas.toString() : undefined}
               badgeColor="green"
               indent
             />
@@ -321,7 +329,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
               label="Agente Soporte" 
               active={currentPage === 'agente-soporte'}
               onClick={() => onNavigate('agente-soporte')}
-              badge="23"
+              badge={shouldShowBadge(badges.agenteSoporte) ? badges.agenteSoporte.toString() : undefined}
               badgeColor="blue"
               indent
             />
@@ -330,7 +338,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
               label="Agente Postventa" 
               active={currentPage === 'agente-postventa'}
               onClick={() => onNavigate('agente-postventa')}
-              badge="31"
+              badge={shouldShowBadge(badges.agentePostventa) ? badges.agentePostventa.toString() : undefined}
               badgeColor="blue"
               indent
             />
@@ -339,7 +347,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
               label="Agente Marketing" 
               active={currentPage === 'agente-marketing'}
               onClick={() => onNavigate('agente-marketing')}
-              badge="8"
+              badge={shouldShowBadge(badges.agenteMarketing) ? badges.agenteMarketing.toString() : undefined}
               badgeColor="purple"
               indent
             />
@@ -367,6 +375,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
               label="Pagos" 
               active={currentPage === 'pagos'}
               onClick={() => onNavigate('pagos')}
+              badge={shouldShowBadge(badges.pagos) ? badges.pagos.toString() : undefined}
+              badgeColor="red"
+              badgeUrgency={getBadgeUrgency('pagos', badges.pagos)}
             />
           </nav>
         </div>
@@ -429,17 +440,39 @@ interface MenuItemProps {
   active?: boolean;
   badge?: string;
   badgeColor?: 'red' | 'purple' | 'blue' | 'green';
+  badgeUrgency?: BadgeUrgency;
   highlight?: boolean;
   indent?: boolean;
   onClick: () => void;
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ icon, label, active, badge, badgeColor = 'red', highlight, indent, onClick }) => {
-  const badgeColors = {
-    red: 'bg-red-500 text-white',
-    purple: 'bg-purple-100 text-purple-600',
-    blue: 'bg-blue-100 text-blue-600',
-    green: 'bg-emerald-100 text-emerald-600'
+const MenuItem: React.FC<MenuItemProps> = ({ 
+  icon, 
+  label, 
+  active, 
+  badge, 
+  badgeColor = 'red', 
+  badgeUrgency,
+  highlight, 
+  indent, 
+  onClick 
+}) => {
+  // Dynamic badge colors based on urgency
+  const getBadgeStyle = () => {
+    if (badgeUrgency === 'critical') {
+      return 'bg-red-500 text-white animate-pulse';
+    }
+    if (badgeUrgency === 'high') {
+      return 'bg-red-500 text-white';
+    }
+    
+    const baseColors = {
+      red: 'bg-red-100 text-red-600',
+      purple: 'bg-purple-100 text-purple-600',
+      blue: 'bg-blue-100 text-blue-600',
+      green: 'bg-emerald-100 text-emerald-600'
+    };
+    return baseColors[badgeColor];
   };
 
   return (
@@ -462,7 +495,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, label, active, badge, badgeCo
         {label}
       </div>
       {badge && (
-        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${badgeColors[badgeColor]}`}>
+        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${getBadgeStyle()}`}>
           {badge}
         </span>
       )}
