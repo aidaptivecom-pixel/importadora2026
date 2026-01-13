@@ -174,7 +174,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ currentPage, onNavi
       return <PedidosPage />;
     case 'reportes':
       return <ReportesPage />;
-    case 'configuracion':
+    case 'settings':
       return <ConfiguracionPage />;
     case 'dashboard':
       return <DashboardHome onNavigate={onNavigate} />;
