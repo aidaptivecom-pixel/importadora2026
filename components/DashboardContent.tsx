@@ -84,6 +84,7 @@ import FacturacionPage from './FacturacionPage';
 import CobranzasPage from './CobranzasPage';
 import PagosPage from './PagosPage';
 import PedidosPage from './PedidosPage';
+import ReportesPage from './ReportesPage';
 import InboxPage from './InboxPage';
 import TiendasOverviewPage from './TiendasOverviewPage';
 import TiendaPage from './TiendaPage';
@@ -170,6 +171,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ currentPage, onNavi
       return <EcommerceHubPage onNavigate={onNavigate} />;
     case 'pedidos':
       return <PedidosPage />;
+    case 'reportes':
+      return <ReportesPage />;
     case 'dashboard':
       return <DashboardHome onNavigate={onNavigate} />;
     case 'proveedores':
