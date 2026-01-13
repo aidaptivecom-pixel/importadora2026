@@ -1,6 +1,14 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// TIENDAS MINORISTAS - DATOS COMPLETOS PARA FASE 1
+// TIENDAS MINORISTAS - DATOS COMPLETOS
 // ══════════════════════════════════════════════════════════════════════════════
+
+export interface TiendaAgente {
+  nombre: string;
+  tipo: 'ventas' | 'soporte' | 'postventa';
+  estado: 'activo' | 'entrenamiento' | 'pausado';
+  precision: number;
+  conversacionesHoy: number;
+}
 
 export interface TiendaMinorista {
   id: string;
@@ -9,12 +17,22 @@ export interface TiendaMinorista {
   descripcion: string;
   vertical: string;
   logo: string;
+  icono: string;
   color: string;
+  colorPrimario: string;
   colorSecundario: string;
   estado: 'activa' | 'desarrollo' | 'pausada';
   plataformas: string[];
   fechaCreacion: string;
-  // Métricas
+  // Métricas anidadas (para EcommerceHubPage)
+  metricas: {
+    ventasMes: number;
+    ingresosMes: number;
+    ticketPromedio: number;
+    crecimientoMes: number;
+    pedidosPendientes: number;
+  };
+  // Métricas planas (para compatibilidad)
   ventasMes: number;
   ingresosMes: number;
   ticketPromedio: number;
@@ -30,6 +48,7 @@ export interface TiendaMinorista {
   comprasAcumuladas: number;
   ultimaCompra: string;
   // Agentes AI
+  agentes: TiendaAgente[];
   agentesActivos: number;
   conversacionesHoy: number;
   // Problemas
@@ -59,11 +78,12 @@ export interface TiendaProductoTop {
 export interface TiendaAlerta {
   id: string;
   tiendaId: string;
-  tipo: 'stock' | 'devolucion' | 'garantia' | 'pago' | 'agente' | 'conversion';
+  tipo: 'stock' | 'devolucion' | 'garantia' | 'pago' | 'agente' | 'conversion' | 'ventas' | 'operacion';
   mensaje: string;
   prioridad: 'alta' | 'media' | 'baja';
   fecha: string;
   accion: string;
+  estado: 'activa' | 'resuelta';
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -78,14 +98,23 @@ export const TIENDAS_MINORISTAS: TiendaMinorista[] = [
     descripcion: 'Accesorios premium para mascotas',
     vertical: 'Mascotas',
     logo: '🐕',
-    color: '#10b981',
-    colorSecundario: '#d1fae5',
+    icono: '🐕',
+    color: '#f59e0b',
+    colorPrimario: '#f59e0b',
+    colorSecundario: '#fef3c7',
     estado: 'activa',
     plataformas: ['WooCommerce', 'MercadoLibre', 'Instagram Shop'],
     fechaCreacion: '2025-06-15',
+    metricas: {
+      ventasMes: 156,
+      ingresosMes: 2850000,
+      ticketPromedio: 18269,
+      crecimientoMes: 18.5,
+      pedidosPendientes: 12
+    },
     ventasMes: 156,
-    ingresosMes: 2340000,
-    ticketPromedio: 15000,
+    ingresosMes: 2850000,
+    ticketPromedio: 18269,
     crecimientoMes: 18.5,
     productosActivos: 145,
     stockCritico: 8,
@@ -94,7 +123,12 @@ export const TIENDAS_MINORISTAS: TiendaMinorista[] = [
     deudaImportadora: 0,
     comprasAcumuladas: 45000,
     ultimaCompra: '2026-01-08',
-    agentesActivos: 2,
+    agentes: [
+      { nombre: 'Agente Ventas', tipo: 'ventas', estado: 'activo', precision: 92, conversacionesHoy: 18 },
+      { nombre: 'Agente Soporte', tipo: 'soporte', estado: 'activo', precision: 88, conversacionesHoy: 12 },
+      { nombre: 'Agente Postventa', tipo: 'postventa', estado: 'activo', precision: 85, conversacionesHoy: 4 }
+    ],
+    agentesActivos: 3,
     conversacionesHoy: 34,
     ticketsAbiertos: 5,
     devolucionesPendientes: 2,
@@ -107,14 +141,23 @@ export const TIENDAS_MINORISTAS: TiendaMinorista[] = [
     descripcion: 'Tecnología inteligente para el hogar',
     vertical: 'Smart Home',
     logo: '🏠',
+    icono: '🏠',
     color: '#3b82f6',
+    colorPrimario: '#3b82f6',
     colorSecundario: '#dbeafe',
     estado: 'activa',
     plataformas: ['Tienda Nube', 'MercadoLibre', 'Amazon'],
     fechaCreacion: '2025-04-20',
+    metricas: {
+      ventasMes: 67,
+      ingresosMes: 3200000,
+      ticketPromedio: 47761,
+      crecimientoMes: 31.2,
+      pedidosPendientes: 8
+    },
     ventasMes: 67,
-    ingresosMes: 3120000,
-    ticketPromedio: 46567,
+    ingresosMes: 3200000,
+    ticketPromedio: 47761,
     crecimientoMes: 31.2,
     productosActivos: 89,
     stockCritico: 3,
@@ -123,7 +166,12 @@ export const TIENDAS_MINORISTAS: TiendaMinorista[] = [
     deudaImportadora: 12500,
     comprasAcumuladas: 78000,
     ultimaCompra: '2026-01-10',
-    agentesActivos: 2,
+    agentes: [
+      { nombre: 'Agente Ventas', tipo: 'ventas', estado: 'activo', precision: 94, conversacionesHoy: 15 },
+      { nombre: 'Agente Soporte', tipo: 'soporte', estado: 'activo', precision: 91, conversacionesHoy: 10 },
+      { nombre: 'Agente Postventa', tipo: 'postventa', estado: 'activo', precision: 87, conversacionesHoy: 3 }
+    ],
+    agentesActivos: 3,
     conversacionesHoy: 28,
     ticketsAbiertos: 3,
     devolucionesPendientes: 1,
@@ -136,14 +184,23 @@ export const TIENDAS_MINORISTAS: TiendaMinorista[] = [
     descripcion: 'Productos de bienestar adulto',
     vertical: 'Adult Wellness',
     logo: '💜',
+    icono: '💜',
     color: '#8b5cf6',
+    colorPrimario: '#8b5cf6',
     colorSecundario: '#ede9fe',
     estado: 'activa',
     plataformas: ['WooCommerce', 'MercadoLibre'],
     fechaCreacion: '2025-08-10',
+    metricas: {
+      ventasMes: 89,
+      ingresosMes: 2250000,
+      ticketPromedio: 25281,
+      crecimientoMes: 24.1,
+      pedidosPendientes: 6
+    },
     ventasMes: 89,
-    ingresosMes: 1890000,
-    ticketPromedio: 21236,
+    ingresosMes: 2250000,
+    ticketPromedio: 25281,
     crecimientoMes: 24.1,
     productosActivos: 112,
     stockCritico: 5,
@@ -152,7 +209,12 @@ export const TIENDAS_MINORISTAS: TiendaMinorista[] = [
     deudaImportadora: 8200,
     comprasAcumuladas: 32000,
     ultimaCompra: '2026-01-05',
-    agentesActivos: 2,
+    agentes: [
+      { nombre: 'Agente Ventas', tipo: 'ventas', estado: 'activo', precision: 90, conversacionesHoy: 10 },
+      { nombre: 'Agente Soporte', tipo: 'soporte', estado: 'activo', precision: 86, conversacionesHoy: 7 },
+      { nombre: 'Agente Postventa', tipo: 'postventa', estado: 'activo', precision: 83, conversacionesHoy: 2 }
+    ],
+    agentesActivos: 3,
     conversacionesHoy: 19,
     ticketsAbiertos: 2,
     devolucionesPendientes: 3,
@@ -191,12 +253,13 @@ export const TIENDAS_METRICAS_DIARIAS: Record<string, TiendaMetricaDiaria[]> = {
 };
 
 export const TIENDAS_ALERTAS: TiendaAlerta[] = [
-  { id: 'ALT-001', tiendaId: 'tienda-001', tipo: 'stock', mensaje: '8 productos con stock crítico', prioridad: 'alta', fecha: '2026-01-13', accion: 'Ver productos' },
-  { id: 'ALT-002', tiendaId: 'tienda-001', tipo: 'devolucion', mensaje: '2 devoluciones pendientes de procesar', prioridad: 'media', fecha: '2026-01-12', accion: 'Procesar' },
-  { id: 'ALT-003', tiendaId: 'tienda-002', tipo: 'garantia', mensaje: '4 reclamos de garantía sin respuesta', prioridad: 'alta', fecha: '2026-01-13', accion: 'Revisar casos' },
-  { id: 'ALT-004', tiendaId: 'tienda-002', tipo: 'stock', mensaje: '3 productos sin stock', prioridad: 'alta', fecha: '2026-01-13', accion: 'Reponer' },
-  { id: 'ALT-005', tiendaId: 'tienda-003', tipo: 'devolucion', mensaje: '3 devoluciones en proceso', prioridad: 'media', fecha: '2026-01-11', accion: 'Ver estado' },
-  { id: 'ALT-006', tiendaId: 'tienda-003', tipo: 'conversion', mensaje: 'Conversión bajó 0.3% vs semana anterior', prioridad: 'baja', fecha: '2026-01-13', accion: 'Analizar' },
+  { id: 'ALT-001', tiendaId: 'tienda-001', tipo: 'stock', mensaje: '8 productos con stock crítico', prioridad: 'alta', fecha: '2026-01-13', accion: 'Ver productos', estado: 'activa' },
+  { id: 'ALT-002', tiendaId: 'tienda-001', tipo: 'devolucion', mensaje: '2 devoluciones pendientes de procesar', prioridad: 'media', fecha: '2026-01-12', accion: 'Procesar', estado: 'activa' },
+  { id: 'ALT-003', tiendaId: 'tienda-002', tipo: 'garantia', mensaje: '4 reclamos de garantía sin respuesta', prioridad: 'alta', fecha: '2026-01-13', accion: 'Revisar casos', estado: 'activa' },
+  { id: 'ALT-004', tiendaId: 'tienda-002', tipo: 'stock', mensaje: '3 productos sin stock', prioridad: 'alta', fecha: '2026-01-13', accion: 'Reponer', estado: 'activa' },
+  { id: 'ALT-005', tiendaId: 'tienda-003', tipo: 'devolucion', mensaje: '3 devoluciones en proceso', prioridad: 'media', fecha: '2026-01-11', accion: 'Ver estado', estado: 'activa' },
+  { id: 'ALT-006', tiendaId: 'tienda-003', tipo: 'conversion', mensaje: 'Conversión bajó 0.3% vs semana anterior', prioridad: 'baja', fecha: '2026-01-13', accion: 'Analizar', estado: 'activa' },
+  { id: 'ALT-007', tiendaId: 'tienda-001', tipo: 'ventas', mensaje: 'Meta mensual alcanzada al 95%', prioridad: 'baja', fecha: '2026-01-12', accion: 'Ver detalle', estado: 'resuelta' },
 ];
 
 export const TIENDAS_PROYECCIONES = {
