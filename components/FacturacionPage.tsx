@@ -19,9 +19,12 @@ import {
   Calendar,
   TrendingUp,
   ArrowUpRight,
-  Receipt
+  Receipt,
+  FileSpreadsheet,
+  Table
 } from 'lucide-react';
 import EmptyState from './EmptyState';
+import { exportToCSV, exportToExcel, generateFilename } from '../utils/exportUtils';
 
 // Types
 type EstadoFactura = 'borrador' | 'enviada' | 'pagada' | 'vencida' | 'anulada';
@@ -194,17 +197,17 @@ const ExportDropdown: React.FC<{ onExportExcel: () => void; onExportCSV: () => v
   return (
     <div className="relative">
       <button onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-2 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 rounded-lg text-sm font-medium text-emerald-700 transition-colors">
-        <Download size={16} />Exportar<ChevronDown size={14} />
+        <Download size={16} />Exportar<ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-slate-100 py-1 z-20">
-            <button onClick={() => { onExportExcel(); setIsOpen(false); }} className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-              <FileText size={14} className="text-green-600" />Excel (.xlsx)
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-20">
+            <button onClick={() => { onExportExcel(); setIsOpen(false); }} className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3">
+              <FileSpreadsheet size={16} className="text-emerald-600" />Exportar a Excel
             </button>
-            <button onClick={() => { onExportCSV(); setIsOpen(false); }} className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-              <FileText size={14} className="text-blue-600" />CSV (.csv)
+            <button onClick={() => { onExportCSV(); setIsOpen(false); }} className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3">
+              <Table size={16} className="text-blue-600" />Exportar a CSV
             </button>
           </div>
         </>
@@ -383,8 +386,57 @@ const FacturacionPage: React.FC = () => {
   const montoPendiente = facturasPendientes.reduce((acc, f) => acc + f.total, 0);
   const facturasPagadas = FACTURAS.filter(f => f.estado === 'pagada');
 
-  const handleExportExcel = () => console.log('Export Excel');
-  const handleExportCSV = () => console.log('Export CSV');
+  // Export functions
+  const exportColumns = [
+    { key: 'numero', header: 'Número Factura' },
+    { key: 'tipo', header: 'Tipo' },
+    { key: 'fecha', header: 'Fecha Emisión' },
+    { key: 'fechaVencimiento', header: 'Fecha Vencimiento' },
+    { key: 'cliente', header: 'Cliente' },
+    { key: 'cuit', header: 'CUIT' },
+    { key: 'direccion', header: 'Dirección' },
+    { key: 'subtotal', header: 'Subtotal USD' },
+    { key: 'iva', header: 'IVA USD' },
+    { key: 'total', header: 'Total USD' },
+    { key: 'estado', header: 'Estado' },
+    { key: 'operacionId', header: 'Operación Vinculada' }
+  ];
+
+  const getEstadoLabel = (estado: EstadoFactura): string => {
+    const labels: Record<EstadoFactura, string> = {
+      borrador: 'Borrador',
+      enviada: 'Enviada',
+      pagada: 'Pagada',
+      vencida: 'Vencida',
+      anulada: 'Anulada'
+    };
+    return labels[estado];
+  };
+
+  const prepareExportData = () => {
+    return filteredFacturas.map(f => ({
+      numero: f.numero,
+      tipo: `Tipo ${f.tipo}`,
+      fecha: f.fecha,
+      fechaVencimiento: f.fechaVencimiento,
+      cliente: f.cliente.nombre,
+      cuit: f.cliente.cuit,
+      direccion: f.cliente.direccion,
+      subtotal: f.subtotal,
+      iva: f.iva,
+      total: f.total,
+      estado: getEstadoLabel(f.estado),
+      operacionId: f.operacionId || ''
+    }));
+  };
+
+  const handleExportExcel = () => {
+    exportToExcel(prepareExportData(), exportColumns, generateFilename('facturas'), 'Facturas');
+  };
+
+  const handleExportCSV = () => {
+    exportToCSV(prepareExportData(), exportColumns, generateFilename('facturas'));
+  };
 
   return (
     <div className="space-y-6">
