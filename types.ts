@@ -33,9 +33,14 @@ export interface CategoryStat {
 export interface ClienteMayorista {
   id: string;
   nombre: string;
-  categoria: 'A' | 'B' | 'C';
-  deuda: number;
-  comprasMes: number;
+  tipo: string;
+  ciudad: string;
+  contacto: string;
+  telefono: string;
+  email: string;
+  facturacionTotal: number;
+  ultimaCompra: string;
+  estado: 'activo' | 'potencial' | 'inactivo';
 }
 
 export interface EcommerceTienda {
