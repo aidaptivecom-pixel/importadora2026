@@ -245,7 +245,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ currentPage, onNavi
 const HoyPage: React.FC<{ onNavigate: (page: PageType, operacionId?: string) => void }> = ({ onNavigate }) => {
   const currentDate = new Date();
   const dateOptions: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
-  // Fix: capitalize first letter and use lowercase "de"
   const rawDate = currentDate.toLocaleDateString('es-AR', dateOptions);
   const formattedDate = rawDate.charAt(0).toUpperCase() + rawDate.slice(1).replace(/ De /g, ' de ');
   
@@ -254,7 +253,7 @@ const HoyPage: React.FC<{ onNavigate: (page: PageType, operacionId?: string) => 
   const alertasCriticas = URGENT_ITEMS.filter(u => u.prioridad === 'critica').length;
   const alertasAltas = URGENT_ITEMS.filter(u => u.prioridad === 'alta').length;
   const cajaUSD = PAGOS_PROXIMOS.slice(0, 6).reduce((acc, p) => acc + p.montoUSD, 0);
-  const stockCritico = INVENTARIO.filter(item => item.stock <= item.stockMinimo).slice(0, 3);
+  const stockCriticoBase = INVENTARIO.filter(item => item.stock <= item.stockMinimo).slice(0, 3);
   const docsFaltantesMap = new Map<string, string[]>();
   OPERACIONES.forEach(op => {
     const pendientes = op.documentos.filter(d => d.estado === 'pendiente' && d.obligatorio).map(d => d.nombre);
@@ -270,15 +269,46 @@ const HoyPage: React.FC<{ onNavigate: (page: PageType, operacionId?: string) => 
   const categoriaLabels: Record<string, string> = { proveedor: 'Proveedores', flete: 'Fletes', despachante: 'Despachantes', terminal: 'Terminal', impuestos: 'Impuestos', otros: 'Otros' };
   const categoriaColors: Record<string, string> = { proveedor: 'bg-blue-500', flete: 'bg-cyan-500', despachante: 'bg-purple-500', terminal: 'bg-amber-500', impuestos: 'bg-red-500', otros: 'bg-slate-400' };
   
-  // Get operations in risk for consistent card height
+  // Get operations in risk with mockup data
   const operacionesEnRiesgoList = OPERACIONES.filter(op => op.riesgo === 'alto' || op.riesgo === 'critico').slice(0, 3);
+  const mockupOpsRiesgo = [
+    { id: 'OP-095', nombre: 'Electrónica Consumo', riesgo: 'alto' as const, alertas: ['Demora en producción'] },
+    { id: 'OP-098', nombre: 'Accesorios Móvil Q1', riesgo: 'alto' as const, alertas: ['Docs incompletos'] },
+  ];
+  const operacionesRiesgoDisplay = operacionesEnRiesgoList.length < 3 
+    ? [...operacionesEnRiesgoList, ...mockupOpsRiesgo.slice(0, 3 - operacionesEnRiesgoList.length)]
+    : operacionesEnRiesgoList;
+
+  // Stock crítico with mockup
+  const mockupStock = [
+    { id: 'mock1', nombre: 'Cargadores USB-C 20W', stock: 12, stockMinimo: 50 },
+    { id: 'mock2', nombre: 'Fundas iPhone 15 Pro', stock: 8, stockMinimo: 30 },
+    { id: 'mock3', nombre: 'Auriculares TWS Basic', stock: 0, stockMinimo: 25 },
+  ];
+  const stockCriticoDisplay = stockCriticoBase.length < 3
+    ? [...stockCriticoBase, ...mockupStock.slice(0, 3 - stockCriticoBase.length)]
+    : stockCriticoBase.slice(0, 3);
+
+  // Docs faltantes with mockup
+  const mockupDocs: [string, string[]][] = [
+    ['OP-097', ['B/L']],
+    ['OP-091', ['B/L']],
+    ['OP-072', ['DUI']],
+    ['OP-088', ['DUI']],
+  ];
+  const docsFaltantesDisplay = docsFaltantesAgrupados.length < 4
+    ? [...docsFaltantesAgrupados, ...mockupDocs.slice(0, 4 - docsFaltantesAgrupados.length)]
+    : docsFaltantesAgrupados.slice(0, 4);
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold text-slate-800">Buenos días, Matías 👋</h1><p className="text-slate-500">{formattedDate}</p></div>
         <div className="flex items-center gap-2 text-sm text-slate-500 bg-white px-4 py-2 rounded-lg border border-slate-100"><Clock size={14} />Actualizado hace 2 min</div>
       </div>
+      
+      {/* KPI Cards Row */}
       <div className="grid grid-cols-4 gap-4">
         <div onClick={() => onNavigate('tablero')} className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><Container size={20} /></div><span className="text-sm font-medium text-slate-500">Operaciones</span></div>
@@ -300,39 +330,43 @@ const HoyPage: React.FC<{ onNavigate: (page: PageType, operacionId?: string) => 
           <div className="flex items-baseline gap-3"><div className="flex items-center gap-1"><p className="text-2xl font-bold text-red-600">{alertasCriticas}</p><p className="text-xs text-red-500 font-medium">críticas</p></div>{alertasAltas > 0 && <div className="flex items-center gap-1"><p className="text-lg font-bold text-amber-500">{alertasAltas}</p><p className="text-xs text-amber-500">altas</p></div>}</div>
         </div>
       </div>
-      {/* Next Best Actions - Full Width */}
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-50 flex items-center justify-between bg-red-50"><div className="flex items-center gap-2"><AlertCircle className="text-red-500" size={20} /><h2 className="font-semibold text-red-700">Next Best Actions</h2><span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">{URGENT_ITEMS.length}</span></div></div>
-        <div className="divide-y divide-slate-50">{URGENT_ITEMS.slice(0, 4).map((item) => (<div key={item.id} className="p-4 hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => { if (item.operacionId) onNavigate('operacion_detalle', item.operacionId); else onNavigate(item.accion as PageType); }}><div className="flex items-start justify-between mb-2"><div className="flex items-start gap-3"><div className={`w-2 h-2 rounded-full mt-2 ${item.prioridad === 'critica' ? 'bg-red-500' : item.prioridad === 'alta' ? 'bg-amber-500' : 'bg-slate-400'}`} /><div><span className="text-sm font-medium text-slate-800">{item.texto}</span><div className="flex items-center gap-3 mt-1"><span className="text-xs text-slate-400">Owner: <span className="text-slate-600">{item.owner}</span></span><span className={`text-xs font-medium ${item.dueTime === 'Vencido' ? 'text-red-600' : item.dueTime === 'Hoy' ? 'text-amber-600' : 'text-slate-500'}`}>{item.dueTime}</span></div><p className="text-xs text-slate-500 mt-1 italic">→ {item.porQue}</p></div></div><button onClick={(e) => { e.stopPropagation(); if (item.operacionId) onNavigate('operacion_detalle', item.operacionId); else onNavigate(item.accion as PageType); }} className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap ${item.prioridad === 'critica' ? 'bg-red-50 text-red-600 hover:bg-red-100' : item.prioridad === 'alta' ? 'bg-amber-50 text-amber-600 hover:bg-amber-100' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}>{item.ctaLabel}</button></div></div>))}</div>
+      
+      {/* Row 1: Next Best Actions + Próximos Hitos */}
+      <div className="grid grid-cols-3 gap-6">
+        <div className="col-span-2 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-slate-50 flex items-center justify-between bg-red-50"><div className="flex items-center gap-2"><AlertCircle className="text-red-500" size={20} /><h2 className="font-semibold text-red-700">Next Best Actions</h2><span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">{URGENT_ITEMS.length}</span></div></div>
+          <div className="divide-y divide-slate-50">{URGENT_ITEMS.slice(0, 4).map((item) => (<div key={item.id} className="p-4 hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => { if (item.operacionId) onNavigate('operacion_detalle', item.operacionId); else onNavigate(item.accion as PageType); }}><div className="flex items-start justify-between"><div className="flex items-start gap-3"><div className={`w-2 h-2 rounded-full mt-2 ${item.prioridad === 'critica' ? 'bg-red-500' : item.prioridad === 'alta' ? 'bg-amber-500' : 'bg-slate-400'}`} /><div><span className="text-sm font-medium text-slate-800">{item.texto}</span><div className="flex items-center gap-3 mt-1"><span className="text-xs text-slate-400">Owner: <span className="text-slate-600">{item.owner}</span></span><span className={`text-xs font-medium ${item.dueTime === 'Vencido' ? 'text-red-600' : item.dueTime === 'Hoy' ? 'text-amber-600' : 'text-slate-500'}`}>{item.dueTime}</span></div><p className="text-xs text-slate-500 mt-1 italic">→ {item.porQue}</p></div></div><button onClick={(e) => { e.stopPropagation(); if (item.operacionId) onNavigate('operacion_detalle', item.operacionId); else onNavigate(item.accion as PageType); }} className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap ${item.prioridad === 'critica' ? 'bg-red-50 text-red-600 hover:bg-red-100' : item.prioridad === 'alta' ? 'bg-amber-50 text-amber-600 hover:bg-amber-100' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}>{item.ctaLabel}</button></div></div>))}</div>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-slate-50 flex items-center justify-between"><div className="flex items-center gap-2"><CalendarClock className="text-blue-500" size={20} /><h2 className="font-semibold text-slate-800">Próximos Hitos</h2></div></div>
+          <div className="divide-y divide-slate-50">{PROXIMOS_HITOS.slice(0, 6).map((hito, idx) => { const fecha = new Date(hito.fecha); const hoy = new Date(); const esHoy = fecha.toDateString() === hoy.toDateString(); const manana = new Date(); manana.setDate(manana.getDate() + 1); const esMañana = fecha.toDateString() === manana.toDateString(); return (<div key={idx} className="p-3 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => onNavigate('operacion_detalle', hito.operacionId)}><div className="flex items-center gap-3"><div className={`text-center min-w-[40px] ${esHoy ? 'text-red-600' : esMañana ? 'text-amber-600' : 'text-slate-500'}`}><p className="text-[10px] uppercase font-medium">{esHoy ? 'HOY' : fecha.toLocaleDateString('es-AR', { weekday: 'short' }).toUpperCase()}</p><p className="text-lg font-bold">{fecha.getDate()}</p></div><div className="flex-1 min-w-0"><p className="text-sm font-medium text-slate-800 truncate">{hito.descripcion}</p><p className="text-xs text-slate-400 truncate">{hito.operacionId} - {hito.operacionNombre}</p></div><HitoIcon tipo={hito.tipo} /></div></div>); })}</div>
+        </div>
       </div>
-      {/* Three Cards Row - Equal Height */}
+
+      {/* Row 2: Operaciones en Riesgo + Docs Faltantes + Stock Crítico */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col h-[220px]">
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden h-[240px] flex flex-col">
           <div className="p-3 border-b border-slate-50 flex items-center justify-between"><div className="flex items-center gap-2"><AlertTriangle className="text-amber-500" size={16} /><h2 className="font-semibold text-slate-800 text-sm">Operaciones en Riesgo</h2></div><button onClick={() => onNavigate('tablero')} className="text-xs text-blue-600 hover:text-blue-700 font-medium">Ver →</button></div>
-          <div className="divide-y divide-slate-50 flex-1 overflow-auto">{operacionesEnRiesgoList.map((op) => (<div key={op.id} className="p-3 hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => onNavigate('operacion_detalle', op.id)}><div className="flex items-center justify-between mb-1"><span className="text-sm font-medium text-slate-800">{op.id}</span><span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${op.riesgo === 'critico' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{op.riesgo.toUpperCase()}</span></div><p className="text-xs text-slate-500 truncate">{op.nombre}</p></div>))}{operacionesEnRiesgoList.length === 0 && <div className="p-6 text-center text-slate-400 text-sm flex-1 flex items-center justify-center">✓ Sin operaciones en riesgo</div>}</div>
+          <div className="divide-y divide-slate-50 flex-1 overflow-auto">{operacionesRiesgoDisplay.map((op, idx) => (<div key={op.id || idx} className="p-3 hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => onNavigate('operacion_detalle', op.id)}><div className="flex items-center justify-between mb-1"><span className="text-sm font-medium text-slate-800">{op.id}</span><span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${op.riesgo === 'critico' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{op.riesgo.toUpperCase()}</span></div><p className="text-xs text-slate-500 truncate">{op.nombre}</p></div>))}</div>
         </div>
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col h-[220px]">
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden h-[240px] flex flex-col">
           <div className="p-3 border-b border-slate-50 flex items-center justify-between"><div className="flex items-center gap-2"><FileWarning className="text-slate-400" size={16} /><h2 className="font-semibold text-slate-800 text-sm">Docs Faltantes</h2></div></div>
-          <div className="p-3 space-y-2 flex-1 overflow-auto">{docsFaltantesAgrupados.map(([opId, docs], idx) => (<div key={idx} className="flex items-center justify-between text-sm hover:bg-slate-50 p-2 rounded cursor-pointer" onClick={() => onNavigate('operacion_detalle', opId)}><span className="text-slate-700 font-medium">{opId}</span><div className="flex items-center gap-1 flex-wrap justify-end">{docs.map((doc, i) => (<span key={i} className="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded">{doc}</span>))}</div></div>))}{docsFaltantesAgrupados.length === 0 && <p className="text-sm text-slate-400 text-center py-4 flex-1 flex items-center justify-center">✓ Todos los docs al día</p>}</div>
+          <div className="p-3 space-y-2 flex-1 overflow-auto">{docsFaltantesDisplay.map(([opId, docs], idx) => (<div key={idx} className="flex items-center justify-between text-sm hover:bg-slate-50 p-2 rounded cursor-pointer" onClick={() => onNavigate('operacion_detalle', opId)}><span className="text-slate-700 font-medium">{opId}</span><div className="flex items-center gap-1 flex-wrap justify-end">{docs.map((doc, i) => (<span key={i} className="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded">{doc}</span>))}</div></div>))}</div>
         </div>
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col h-[220px]">
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden h-[240px] flex flex-col">
           <div className="p-3 border-b border-slate-50 flex items-center justify-between bg-amber-50/60"><div className="flex items-center gap-2"><AlertTriangle className="text-amber-600" size={16} /><h2 className="font-semibold text-amber-800 text-sm">Stock Crítico</h2></div><button onClick={() => onNavigate('inventario')} className="text-xs text-amber-700 hover:text-amber-800 font-medium">Ver →</button></div>
-          <div className="divide-y divide-slate-50 flex-1 overflow-auto">{stockCritico.map((item, idx) => (<div key={idx} className="p-3 flex items-center justify-between"><span className="text-sm text-slate-700">{item.nombre}</span><span className={`text-sm font-semibold ${item.stock === 0 ? 'text-red-600' : 'text-amber-600'}`}>{item.stock} uds</span></div>))}{stockCritico.length === 0 && <div className="p-4 text-center text-slate-400 text-sm flex-1 flex items-center justify-center">✓ Stock OK</div>}</div>
+          <div className="divide-y divide-slate-50 flex-1 overflow-auto">{stockCriticoDisplay.map((item, idx) => (<div key={item.id || idx} className="p-3 flex items-center justify-between"><span className="text-sm text-slate-700 truncate flex-1 mr-2">{item.nombre}</span><span className={`text-sm font-semibold whitespace-nowrap ${item.stock === 0 ? 'text-red-600' : 'text-amber-600'}`}>{item.stock} uds</span></div>))}</div>
         </div>
       </div>
-      {/* Two Column Layout: Pagos + Hitos */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden"><div className="p-4 border-b border-slate-50 flex items-center justify-between"><div className="flex items-center gap-2"><CircleDollarSign className="text-emerald-500" size={20} /><h2 className="font-semibold text-slate-800">Pagos Próximos</h2></div><button onClick={() => onNavigate('pagos')} className="text-sm text-blue-600 hover:text-blue-700 font-medium">Ver todos →</button></div><div className="overflow-x-auto"><table className="w-full text-left"><thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase"><tr><th className="p-3">Fecha</th><th className="p-3">Concepto</th><th className="p-3">Operación</th><th className="p-3 text-right">Monto USD</th></tr></thead><tbody className="divide-y divide-slate-50 text-sm">{PAGOS_PROXIMOS.slice(0, 4).map((pago, idx) => (<tr key={idx} className="hover:bg-slate-50 cursor-pointer" onClick={() => onNavigate('operacion_detalle', pago.operacionId)}><td className={`p-3 ${pago.concepto.includes('VENCIDO') ? 'text-red-600 font-semibold' : 'text-slate-600'}`}>{new Date(pago.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}</td><td className="p-3 text-slate-800">{pago.concepto.replace(' (VENCIDO)', '')}</td><td className="p-3 text-slate-500">{pago.operacionId}</td><td className="p-3 text-right font-semibold text-slate-800">${pago.montoUSD.toLocaleString()}</td></tr>))}</tbody></table></div></div>
-        </div>
-        <div>
-          <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden"><div className="p-4 border-b border-slate-50 flex items-center justify-between"><div className="flex items-center gap-2"><CalendarClock className="text-blue-500" size={20} /><h2 className="font-semibold text-slate-800">Próximos Hitos</h2></div></div><div className="divide-y divide-slate-50">{PROXIMOS_HITOS.slice(0, 5).map((hito, idx) => { const fecha = new Date(hito.fecha); const hoy = new Date(); const esHoy = fecha.toDateString() === hoy.toDateString(); const esMañana = fecha.toDateString() === new Date(hoy.setDate(hoy.getDate() + 1)).toDateString(); return (<div key={idx} className="p-3 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => onNavigate('operacion_detalle', hito.operacionId)}><div className="flex items-center gap-3"><div className={`text-center min-w-[40px] ${esHoy ? 'text-red-600' : esMañana ? 'text-amber-600' : 'text-slate-500'}`}><p className="text-[10px] uppercase font-medium">{esHoy ? 'HOY' : fecha.toLocaleDateString('es-AR', { weekday: 'short' }).toUpperCase()}</p><p className="text-lg font-bold">{fecha.getDate()}</p></div><div className="flex-1 min-w-0"><p className="text-sm font-medium text-slate-800 truncate">{hito.descripcion}</p><p className="text-xs text-slate-400 truncate">{hito.operacionId} - {hito.operacionNombre}</p></div><HitoIcon tipo={hito.tipo} /></div></div>); })}</div></div>
-        </div>
+
+      {/* Row 3: Pagos Próximos - Full Width */}
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-slate-50 flex items-center justify-between"><div className="flex items-center gap-2"><CircleDollarSign className="text-emerald-500" size={20} /><h2 className="font-semibold text-slate-800">Pagos Próximos</h2></div><button onClick={() => onNavigate('pagos')} className="text-sm text-blue-600 hover:text-blue-700 font-medium">Ver todos →</button></div>
+        <div className="overflow-x-auto"><table className="w-full text-left"><thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase"><tr><th className="p-3">Fecha</th><th className="p-3">Concepto</th><th className="p-3">Operación</th><th className="p-3 text-right">Monto USD</th></tr></thead><tbody className="divide-y divide-slate-50 text-sm">{PAGOS_PROXIMOS.slice(0, 4).map((pago, idx) => (<tr key={idx} className="hover:bg-slate-50 cursor-pointer" onClick={() => onNavigate('operacion_detalle', pago.operacionId)}><td className={`p-3 ${pago.concepto.includes('VENCIDO') ? 'text-red-600 font-semibold' : 'text-slate-600'}`}>{new Date(pago.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}</td><td className="p-3 text-slate-800">{pago.concepto.replace(' (VENCIDO)', '')}</td><td className="p-3 text-slate-500">{pago.operacionId}</td><td className="p-3 text-right font-semibold text-slate-800">${pago.montoUSD.toLocaleString()}</td></tr>))}</tbody></table></div>
       </div>
     </div>
   );
 };
-
 const HitoIcon: React.FC<{ tipo: string }> = ({ tipo }) => {
   const iconClass = "w-6 h-6 rounded-full flex items-center justify-center";
   switch(tipo) { case 'eta': return <div className={`${iconClass} bg-blue-50 text-blue-600`}><Ship size={12} /></div>; case 'free_time': return <div className={`${iconClass} bg-red-50 text-red-600`}><Clock size={12} /></div>; case 'cutoff': return <div className={`${iconClass} bg-amber-50 text-amber-600`}><FileText size={12} /></div>; case 'pago': return <div className={`${iconClass} bg-emerald-50 text-emerald-600`}><DollarSign size={12} /></div>; case 'turno_retiro': return <div className={`${iconClass} bg-purple-50 text-purple-600`}><Package size={12} /></div>; default: return <div className={`${iconClass} bg-slate-100 text-slate-500`}><Calendar size={12} /></div>; }
@@ -557,6 +591,25 @@ const DashboardHome: React.FC<{ onNavigate: (page: PageType, operacionId?: strin
   );
 };
 
+// ============ KPI CARD ============
+const KPICard: React.FC<{ data: typeof KPIS[0]; index: number }> = ({ data, index }) => {
+  const iconColors = ['bg-blue-50 text-blue-600', 'bg-emerald-50 text-emerald-600', 'bg-amber-50 text-amber-600', 'bg-purple-50 text-purple-600'];
+  const icons = [Container, DollarSign, Package, Users];
+  const Icon = icons[index % icons.length];
+  return (
+    <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+      <div className="flex items-center justify-between mb-4"><div className={`w-10 h-10 rounded-lg flex items-center justify-center ${iconColors[index % iconColors.length]}`}><Icon size={20} /></div><span className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${data.change > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>{data.change > 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}{Math.abs(data.change)}%</span></div>
+      <div><p className="text-xs text-slate-500 font-medium mb-1">{data.title}</p><p className="text-2xl font-bold text-slate-800">{data.value}</p></div>
+    </div>
+  );
+};
+
+// ============ STATUS BADGE ============
+const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
+  const styles: Record<string, string> = { 'En Tránsito': 'bg-blue-50 text-blue-600', 'En Aduana': 'bg-amber-50 text-amber-600', 'Entregado': 'bg-green-50 text-green-600', 'Pendiente': 'bg-slate-100 text-slate-600' };
+  return <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${styles[status] || 'bg-slate-100 text-slate-600'}`}>{status}</span>;
+};
+
 // ============ EMBARQUES PAGE (CON FILTROS Y EXPORT) ============
 const EmbarquesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -565,8 +618,8 @@ const EmbarquesPage: React.FC = () => {
   
   const filteredEmbarques = useMemo(() => {
     return RECENT_SHIPMENTS.filter(emb => {
-      const matchSearch = emb.productName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         emb.id.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchSearch = emb.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         emb.productName.toLowerCase().includes(searchTerm.toLowerCase());
       const matchTipo = !filterTipo || emb.tipo === filterTipo;
       const matchEstado = !filterEstado || emb.status === filterEstado;
       return matchSearch && matchTipo && matchEstado;
@@ -597,11 +650,10 @@ const EmbarquesPage: React.FC = () => {
           </select>
           <select value={filterEstado} onChange={(e) => setFilterEstado(e.target.value)} className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-100">
             <option value="">Todos los estados</option>
-            <option value="transito">En Tránsito</option>
-            <option value="aduana">En Aduana</option>
-            <option value="produccion">Producción</option>
-            <option value="demorado">Demorado</option>
-            <option value="entregado">Entregado</option>
+            <option value="En Tránsito">En Tránsito</option>
+            <option value="En Aduana">En Aduana</option>
+            <option value="Entregado">Entregado</option>
+            <option value="Pendiente">Pendiente</option>
           </select>
           {hasFilters && (
             <button onClick={clearFilters} className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1">
@@ -612,8 +664,8 @@ const EmbarquesPage: React.FC = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4"><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><Ship size={20} /></div><span className="text-sm font-medium text-slate-500">En Tránsito</span></div><p className="text-2xl font-bold text-slate-800">5</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-600"><Container size={20} /></div><span className="text-sm font-medium text-slate-500">En Aduana</span></div><p className="text-2xl font-bold text-slate-800">3</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600"><AlertTriangle size={20} /></div><span className="text-sm font-medium text-slate-500">Demorados</span></div><p className="text-2xl font-bold text-slate-800">1</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600"><CheckCircle2 size={20} /></div><span className="text-sm font-medium text-slate-500">Entregados (Mes)</span></div><p className="text-2xl font-bold text-slate-800">12</p></div></div>
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden"><div className="overflow-x-auto"><table className="w-full text-left border-collapse"><thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase tracking-wider"><tr><th className="p-4">ID</th><th className="p-4">Producto</th><th className="p-4">Origen</th><th className="p-4">Tipo</th><th className="p-4">Estado</th><th className="p-4">ETA</th><th className="p-4">Progreso</th><th className="p-4 text-right">Valor USD</th></tr></thead><tbody className="divide-y divide-slate-50 text-sm text-slate-700">{filteredEmbarques.map((item) => (<tr key={item.id} className="hover:bg-slate-50/80 transition-colors cursor-pointer"><td className="p-4 font-medium text-blue-600">{item.id}</td><td className="p-4 font-medium text-slate-800">{item.productName}</td><td className="p-4"><div className="flex items-center gap-1.5 text-slate-600"><MapPin size={14} className="text-slate-400" />{item.origen}</div></td><td className="p-4"><span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${item.tipo === 'maritimo' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'}`}>{item.tipo === 'maritimo' ? <Anchor size={12} /> : <Plane size={12} />}{item.tipo === 'maritimo' ? 'Marítimo' : 'Aéreo'}</span></td><td className="p-4"><StatusBadge status={item.status} /></td><td className="p-4 text-slate-600">{item.eta}</td><td className="p-4"><div className="w-24"><div className="flex items-center justify-between text-xs mb-1"><span className="text-slate-500">{item.progreso}%</span></div><div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${item.progreso}%` }} /></div></div></td><td className="p-4 text-right font-semibold text-slate-800">${item.value.toLocaleString()}</td></tr>))}</tbody></table></div></div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4"><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><Ship size={20} /></div><span className="text-sm font-medium text-slate-500">Total Embarques</span></div><p className="text-2xl font-bold text-slate-800">{RECENT_SHIPMENTS.length}</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-600"><Anchor size={20} /></div><span className="text-sm font-medium text-slate-500">Marítimos</span></div><p className="text-2xl font-bold text-amber-600">{RECENT_SHIPMENTS.filter(s => s.tipo === 'maritimo').length}</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600"><Plane size={20} /></div><span className="text-sm font-medium text-slate-500">Aéreos</span></div><p className="text-2xl font-bold text-purple-600">{RECENT_SHIPMENTS.filter(s => s.tipo === 'aereo').length}</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600"><DollarSign size={20} /></div><span className="text-sm font-medium text-slate-500">Valor Total</span></div><p className="text-2xl font-bold text-emerald-600">${(RECENT_SHIPMENTS.reduce((acc, s) => acc + s.value, 0) / 1000).toFixed(0)}K</p></div></div>
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden"><div className="overflow-x-auto"><table className="w-full text-left border-collapse"><thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase tracking-wider"><tr><th className="p-4">ID</th><th className="p-4">Producto</th><th className="p-4">Tipo</th><th className="p-4">Origen</th><th className="p-4">ETA</th><th className="p-4">Estado</th><th className="p-4 text-right">Valor</th></tr></thead><tbody className="divide-y divide-slate-50 text-sm text-slate-700">{filteredEmbarques.map((emb) => (<tr key={emb.id} className="hover:bg-slate-50/80 transition-colors cursor-pointer"><td className="p-4 font-medium text-blue-600">{emb.id}</td><td className="p-4 font-medium text-slate-800">{emb.productName}</td><td className="p-4"><div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${emb.tipo === 'maritimo' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>{emb.tipo === 'maritimo' ? <Anchor size={12} /> : <Plane size={12} />}{emb.tipo === 'maritimo' ? 'Marítimo' : 'Aéreo'}</div></td><td className="p-4"><div className="flex items-center gap-1.5 text-slate-500"><MapPin size={14} className="text-slate-400" />{emb.origen}</div></td><td className="p-4 text-slate-600">{new Date(emb.eta).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}</td><td className="p-4"><StatusBadge status={emb.status} /></td><td className="p-4 text-right font-semibold text-slate-800">${emb.value.toLocaleString()}</td></tr>))}</tbody></table></div></div>
     </div>
   );
 };
@@ -621,26 +673,29 @@ const EmbarquesPage: React.FC = () => {
 // ============ MAYORISTAS PAGE (CON FILTROS Y EXPORT) ============
 const MayoristasPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategoria, setFilterCategoria] = useState<string>('');
+  const [filterTipo, setFilterTipo] = useState<string>('');
   const [filterEstado, setFilterEstado] = useState<string>('');
   
-  const filteredClientes = useMemo(() => {
-    return CLIENTES_MAYORISTAS.filter(cli => {
-      const matchSearch = cli.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         cli.id.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchCategoria = !filterCategoria || cli.categoria === filterCategoria;
-      const matchEstado = !filterEstado || 
-        (filterEstado === 'deuda' && cli.deuda > 0) ||
-        (filterEstado === 'aldia' && cli.deuda === 0);
-      return matchSearch && matchCategoria && matchEstado;
-    });
-  }, [searchTerm, filterCategoria, filterEstado]);
+  const tiposUnicos = useMemo(() => [...new Set(CLIENTES_MAYORISTAS.map(c => c.tipo))], []);
   
-  const handleExportExcel = () => exportToExcel(formatMayoristasForExport(filteredClientes), 'mayoristas', 'Mayoristas');
+  const filteredClientes = useMemo(() => {
+    return CLIENTES_MAYORISTAS.filter(cliente => {
+      const matchSearch = cliente.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         cliente.contacto.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchTipo = !filterTipo || cliente.tipo === filterTipo;
+      const matchEstado = !filterEstado || cliente.estado === filterEstado;
+      return matchSearch && matchTipo && matchEstado;
+    });
+  }, [searchTerm, filterTipo, filterEstado]);
+  
+  const handleExportExcel = () => exportToExcel(formatMayoristasForExport(filteredClientes), 'mayoristas', 'Clientes Mayoristas');
   const handleExportCSV = () => exportToCSV(formatMayoristasForExport(filteredClientes), 'mayoristas');
   
-  const clearFilters = () => { setSearchTerm(''); setFilterCategoria(''); setFilterEstado(''); };
-  const hasFilters = searchTerm || filterCategoria || filterEstado;
+  const clearFilters = () => { setSearchTerm(''); setFilterTipo(''); setFilterEstado(''); };
+  const hasFilters = searchTerm || filterTipo || filterEstado;
+  
+  const estadoColors: Record<string, string> = { activo: 'bg-green-50 text-green-600', potencial: 'bg-blue-50 text-blue-600', inactivo: 'bg-slate-100 text-slate-500' };
+  const estadoLabels: Record<string, string> = { activo: 'Activo', potencial: 'Potencial', inactivo: 'Inactivo' };
   
   return (
     <div className="space-y-6">
@@ -653,16 +708,15 @@ const MayoristasPage: React.FC = () => {
             <Filter size={16} className="text-slate-400" />
             <span className="text-sm font-medium text-slate-600">Filtros:</span>
           </div>
-          <select value={filterCategoria} onChange={(e) => setFilterCategoria(e.target.value)} className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-100">
-            <option value="">Todas las categorías</option>
-            <option value="A">Categoría A</option>
-            <option value="B">Categoría B</option>
-            <option value="C">Categoría C</option>
+          <select value={filterTipo} onChange={(e) => setFilterTipo(e.target.value)} className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-100">
+            <option value="">Todos los tipos</option>
+            {tiposUnicos.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
           <select value={filterEstado} onChange={(e) => setFilterEstado(e.target.value)} className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-100">
             <option value="">Todos los estados</option>
-            <option value="aldia">Al día</option>
-            <option value="deuda">Con deuda</option>
+            <option value="activo">Activo</option>
+            <option value="potencial">Potencial</option>
+            <option value="inactivo">Inactivo</option>
           </select>
           {hasFilters && (
             <button onClick={clearFilters} className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1">
@@ -673,14 +727,10 @@ const MayoristasPage: React.FC = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4"><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><p className="text-sm text-slate-500 mb-1">Total Clientes</p><p className="text-2xl font-bold text-slate-800">34</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><p className="text-sm text-slate-500 mb-1">Categoría A</p><p className="text-2xl font-bold text-emerald-600">12</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><p className="text-sm text-slate-500 mb-1">Deuda Total</p><p className="text-2xl font-bold text-amber-600">$715K</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><p className="text-sm text-slate-500 mb-1">Ventas Mes</p><p className="text-2xl font-bold text-blue-600">$1.11M</p></div></div>
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden"><div className="overflow-x-auto"><table className="w-full text-left border-collapse"><thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase tracking-wider"><tr><th className="p-4">ID</th><th className="p-4">Cliente</th><th className="p-4">Categoría</th><th className="p-4 text-right">Deuda</th><th className="p-4 text-right">Compras Mes</th><th className="p-4">Estado</th></tr></thead><tbody className="divide-y divide-slate-50 text-sm text-slate-700">{filteredClientes.map((cliente) => (<tr key={cliente.id} className="hover:bg-slate-50/80 transition-colors cursor-pointer"><td className="p-4 font-medium text-blue-600">{cliente.id}</td><td className="p-4 font-medium text-slate-800">{cliente.nombre}</td><td className="p-4"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${cliente.categoria === 'A' ? 'bg-emerald-50 text-emerald-600' : cliente.categoria === 'B' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>Cat. {cliente.categoria}</span></td><td className={`p-4 text-right font-medium ${cliente.deuda > 0 ? 'text-amber-600' : 'text-green-600'}`}>${cliente.deuda.toLocaleString()}</td><td className="p-4 text-right font-semibold text-slate-800">${cliente.comprasMes.toLocaleString()}</td><td className="p-4"><span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${cliente.deuda === 0 ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>{cliente.deuda === 0 ? 'Al día' : 'Deuda'}</span></td></tr>))}</tbody></table></div></div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4"><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><Users size={20} /></div><span className="text-sm font-medium text-slate-500">Total Clientes</span></div><p className="text-2xl font-bold text-slate-800">{CLIENTES_MAYORISTAS.length}</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600"><CheckCircle2 size={20} /></div><span className="text-sm font-medium text-slate-500">Activos</span></div><p className="text-2xl font-bold text-green-600">{CLIENTES_MAYORISTAS.filter(c => c.estado === 'activo').length}</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600"><TrendingUp size={20} /></div><span className="text-sm font-medium text-slate-500">Potenciales</span></div><p className="text-2xl font-bold text-purple-600">{CLIENTES_MAYORISTAS.filter(c => c.estado === 'potencial').length}</p></div><div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm"><div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600"><DollarSign size={20} /></div><span className="text-sm font-medium text-slate-500">Facturación Total</span></div><p className="text-2xl font-bold text-emerald-600">${(CLIENTES_MAYORISTAS.reduce((acc, c) => acc + c.facturacionTotal, 0) / 1000000).toFixed(2)}M</p></div></div>
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden"><div className="overflow-x-auto"><table className="w-full text-left border-collapse"><thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase tracking-wider"><tr><th className="p-4">Cliente</th><th className="p-4">Tipo</th><th className="p-4">Ubicación</th><th className="p-4">Contacto</th><th className="p-4 text-right">Facturación</th><th className="p-4">Última Compra</th><th className="p-4">Estado</th></tr></thead><tbody className="divide-y divide-slate-50 text-sm text-slate-700">{filteredClientes.map((cliente) => (<tr key={cliente.id} className="hover:bg-slate-50/80 transition-colors cursor-pointer"><td className="p-4"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">{cliente.nombre.slice(0, 2).toUpperCase()}</div><p className="font-medium text-slate-800">{cliente.nombre}</p></div></td><td className="p-4"><span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">{cliente.tipo}</span></td><td className="p-4"><div className="flex items-center gap-1.5 text-slate-600"><MapPin size={14} className="text-slate-400" />{cliente.ciudad}</div></td><td className="p-4"><div className="flex items-center gap-2"><button className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500"><Phone size={14} /></button><button className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500"><Mail size={14} /></button><button className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500"><MessageSquare size={14} /></button></div></td><td className="p-4 text-right font-semibold text-slate-800">${cliente.facturacionTotal.toLocaleString()}</td><td className="p-4 text-slate-500">{new Date(cliente.ultimaCompra).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}</td><td className="p-4"><span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${estadoColors[cliente.estado]}`}>{estadoLabels[cliente.estado]}</span></td></tr>))}</tbody></table></div></div>
     </div>
   );
 };
-
-// ============ SHARED COMPONENTS ============
-const KPICard: React.FC<{ data: any, index: number }> = ({ data, index }) => { const icons = [DollarSign, Ship, Container, Wallet]; const Icon = icons[index % icons.length]; const isNegative = data.growth < 0; return (<div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow"><div className="flex justify-between items-start mb-4"><div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500"><Icon size={20} /></div><span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md flex items-center gap-0.5 ${isNegative ? 'text-red-600 bg-red-50' : 'text-green-600 bg-green-50'}`}>{isNegative ? <ArrowDownRight size={10} /> : <ArrowUpRight size={10} />}{isNegative ? '' : '+'}{data.growth}%</span></div><div className="mb-4"><p className="text-xs text-slate-500 mb-1">{data.label}</p><h3 className="text-2xl font-bold text-slate-800">{data.value}</h3></div><div className="h-10 w-full mt-auto"><ResponsiveContainer width="100%" height="100%"><BarChart data={data.chartData}><Bar dataKey="val" fill="#3b82f6" radius={[2, 2, 2, 2]} barSize={6} /></BarChart></ResponsiveContainer></div></div>); };
-const StatusBadge: React.FC<{ status: string }> = ({ status }) => { const styles: Record<string, string> = { transito: "bg-blue-50 text-blue-600", entregado: "bg-green-50 text-green-600", aduana: "bg-amber-50 text-amber-600", demorado: "bg-red-50 text-red-600", produccion: "bg-purple-50 text-purple-600" }; const labels: Record<string, string> = { transito: "En tránsito", entregado: "Entregado", aduana: "En aduana", demorado: "Demorado", produccion: "Producción" }; return (<span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${styles[status] || 'bg-gray-100 text-gray-600'}`}>{labels[status] || status}</span>); };
 
 export default DashboardContent;
