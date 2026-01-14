@@ -327,7 +327,7 @@ const HoyPage: React.FC<{ onNavigate: (page: PageType, operacionId?: string) => 
         </div>
         <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
           <div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600"><AlertOctagon size={20} /></div><span className="text-sm font-medium text-slate-500">Alertas</span></div>
-          <div className="flex items-baseline gap-3"><div className="flex items-center gap-1"><p className="text-2xl font-bold text-red-600">{alertasCriticas}</p><p className="text-xs text-red-500 font-medium">críticas</p></div>{alertasAltas > 0 && <div className="flex items-center gap-1"><p className="text-lg font-bold text-amber-500">{alertasAltas}</p><p className="text-xs text-amber-500">altas</p></div>}</div>
+          <div className="flex items-end gap-4"><div className="flex items-baseline gap-1.5"><p className="text-2xl font-bold text-red-600">{alertasCriticas}</p><p className="text-sm text-red-500 font-medium">{alertasCriticas === 1 ? 'crítica' : 'críticas'}</p></div>{alertasAltas > 0 && <div className="flex items-baseline gap-1.5"><p className="text-xl font-bold text-amber-500">{alertasAltas}</p><p className="text-sm text-amber-500 font-medium">{alertasAltas === 1 ? 'alta' : 'altas'}</p></div>}</div>
         </div>
       </div>
       
