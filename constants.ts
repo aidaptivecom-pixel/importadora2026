@@ -79,12 +79,155 @@ export const DONUT_DATA = [
   { name: 'Ecommerce', value: 28, fill: '#10b981' },
 ];
 
+// ══════════════════════════════════════════════════════════════════════════════
+// CLIENTES MAYORISTAS - ESTRUCTURA ACTUALIZADA
+// ══════════════════════════════════════════════════════════════════════════════
+
 export const CLIENTES_MAYORISTAS: ClienteMayorista[] = [
-  { id: 'CLI-001', nombre: 'Distribuidora del Sur SRL', categoria: 'A', deuda: 180000, comprasMes: 245000 },
-  { id: 'CLI-002', nombre: 'TechStore Argentina', categoria: 'A', deuda: 350000, comprasMes: 412000 },
-  { id: 'CLI-003', nombre: 'Electro Mendoza', categoria: 'B', deuda: 0, comprasMes: 89000 },
-  { id: 'CLI-004', nombre: 'Importaciones Córdoba SA', categoria: 'A', deuda: 120000, comprasMes: 320000 },
-  { id: 'CLI-005', nombre: 'Bazar Express', categoria: 'C', deuda: 65000, comprasMes: 45000 },
+  { 
+    id: 'CLI-001', 
+    nombre: 'Distribuidora del Sur SRL', 
+    tipo: 'Distribuidor',
+    ciudad: 'Buenos Aires',
+    contacto: 'Juan Pérez',
+    telefono: '+54 11 4555-1234',
+    email: 'jperez@delsur.com.ar',
+    facturacionTotal: 2450000,
+    ultimaCompra: formatFechaISO(diasAtras(5)),
+    estado: 'activo'
+  },
+  { 
+    id: 'CLI-002', 
+    nombre: 'TechStore Argentina', 
+    tipo: 'Retail',
+    ciudad: 'Buenos Aires',
+    contacto: 'María González',
+    telefono: '+54 11 4888-5678',
+    email: 'mgonzalez@techstore.com.ar',
+    facturacionTotal: 4120000,
+    ultimaCompra: formatFechaISO(diasAtras(3)),
+    estado: 'activo'
+  },
+  { 
+    id: 'CLI-003', 
+    nombre: 'Electro Mendoza', 
+    tipo: 'Retail',
+    ciudad: 'Mendoza',
+    contacto: 'Carlos Ruiz',
+    telefono: '+54 261 456-7890',
+    email: 'cruiz@electromendoza.com.ar',
+    facturacionTotal: 890000,
+    ultimaCompra: formatFechaISO(diasAtras(12)),
+    estado: 'activo'
+  },
+  { 
+    id: 'CLI-004', 
+    nombre: 'Importaciones Córdoba SA', 
+    tipo: 'Distribuidor',
+    ciudad: 'Córdoba',
+    contacto: 'Laura Fernández',
+    telefono: '+54 351 234-5678',
+    email: 'lfernandez@impcordoba.com.ar',
+    facturacionTotal: 3200000,
+    ultimaCompra: formatFechaISO(diasAtras(7)),
+    estado: 'activo'
+  },
+  { 
+    id: 'CLI-005', 
+    nombre: 'Bazar Express', 
+    tipo: 'Mayorista',
+    ciudad: 'Rosario',
+    contacto: 'Roberto Sánchez',
+    telefono: '+54 341 987-6543',
+    email: 'rsanchez@bazarexpress.com.ar',
+    facturacionTotal: 450000,
+    ultimaCompra: formatFechaISO(diasAtras(30)),
+    estado: 'potencial'
+  },
+  { 
+    id: 'CLI-006', 
+    nombre: 'Pet World SA', 
+    tipo: 'Retail Mascotas',
+    ciudad: 'Buenos Aires',
+    contacto: 'Ana Martínez',
+    telefono: '+54 11 5555-4444',
+    email: 'amartinez@petworld.com.ar',
+    facturacionTotal: 1850000,
+    ultimaCompra: formatFechaISO(diasAtras(4)),
+    estado: 'activo'
+  },
+  { 
+    id: 'CLI-007', 
+    nombre: 'Smart Solutions', 
+    tipo: 'Integrador',
+    ciudad: 'Buenos Aires',
+    contacto: 'Diego López',
+    telefono: '+54 11 6666-3333',
+    email: 'dlopez@smartsolutions.com.ar',
+    facturacionTotal: 2780000,
+    ultimaCompra: formatFechaISO(diasAtras(8)),
+    estado: 'activo'
+  },
+  { 
+    id: 'CLI-008', 
+    nombre: 'Norte Distribuciones', 
+    tipo: 'Distribuidor',
+    ciudad: 'Tucumán',
+    contacto: 'Pablo Gómez',
+    telefono: '+54 381 444-2222',
+    email: 'pgomez@nortedist.com.ar',
+    facturacionTotal: 980000,
+    ultimaCompra: formatFechaISO(diasAtras(15)),
+    estado: 'activo'
+  },
+  { 
+    id: 'CLI-009', 
+    nombre: 'Juguetería El Reino', 
+    tipo: 'Retail Juguetes',
+    ciudad: 'La Plata',
+    contacto: 'Silvia Torres',
+    telefono: '+54 221 333-1111',
+    email: 'storres@elreino.com.ar',
+    facturacionTotal: 650000,
+    ultimaCompra: formatFechaISO(diasAtras(10)),
+    estado: 'activo'
+  },
+  { 
+    id: 'CLI-010', 
+    nombre: 'Patagonia Import', 
+    tipo: 'Distribuidor',
+    ciudad: 'Neuquén',
+    contacto: 'Martín Rodríguez',
+    telefono: '+54 299 555-7777',
+    email: 'mrodriguez@patagoniaimport.com.ar',
+    facturacionTotal: 520000,
+    ultimaCompra: formatFechaISO(diasAtras(45)),
+    estado: 'potencial'
+  },
+  { 
+    id: 'CLI-011', 
+    nombre: 'Casa del Audio', 
+    tipo: 'Retail',
+    ciudad: 'Mar del Plata',
+    contacto: 'Fernando Vega',
+    telefono: '+54 223 666-8888',
+    email: 'fvega@casadelaudio.com.ar',
+    facturacionTotal: 780000,
+    ultimaCompra: formatFechaISO(diasAtras(18)),
+    estado: 'activo'
+  },
+  { 
+    id: 'CLI-012', 
+    nombre: 'Litoral Comercial', 
+    tipo: 'Mayorista',
+    ciudad: 'Santa Fe',
+    contacto: 'Claudia Méndez',
+    telefono: '+54 342 777-9999',
+    email: 'cmendez@litoralcomercial.com.ar',
+    facturacionTotal: 1120000,
+    ultimaCompra: formatFechaISO(diasAtras(6)),
+    estado: 'activo'
+  },
 ];
 
 export const ECOMMERCE_STATS: EcommerceTienda[] = [
