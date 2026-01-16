@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import DashboardContent from './components/DashboardContent';
+import LoginPage from './components/LoginPage';
 import { pageVariants } from './utils/animations';
 
 export type PageType = 
@@ -57,8 +58,43 @@ export type PageType =
   | 'integraciones';
 
 const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<PageType>('hoy');
   const [selectedOperacionId, setSelectedOperacionId] = useState<string | undefined>(undefined);
+
+  // Verificar autenticación al cargar
+  useEffect(() => {
+    const checkAuth = () => {
+      const authData = localStorage.getItem('nexo_auth');
+      if (authData) {
+        try {
+          const parsed = JSON.parse(authData);
+          // Verificar si la sesión no ha expirado
+          if (parsed.expires && parsed.expires > Date.now()) {
+            setIsAuthenticated(true);
+          } else {
+            // Sesión expirada, limpiar
+            localStorage.removeItem('nexo_auth');
+          }
+        } catch {
+          localStorage.removeItem('nexo_auth');
+        }
+      }
+      setIsCheckingAuth(false);
+    };
+    checkAuth();
+  }, []);
+
+  const handleLogin = (success: boolean) => {
+    setIsAuthenticated(success);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('nexo_auth');
+    setIsAuthenticated(false);
+    setCurrentPage('hoy');
+  };
 
   const handleNavigate = (page: PageType, operacionId?: string) => {
     setCurrentPage(page);
@@ -161,11 +197,29 @@ const App: React.FC = () => {
     return sections[currentPage];
   };
 
+  // Pantalla de carga mientras verifica autenticación
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white text-lg">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Mostrar login si no está autenticado
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
+  // Dashboard principal
   return (
     <div className="min-h-screen bg-slate-200 p-4">
       {/* Dashboard Container with rounded corners */}
       <div className="flex min-h-[calc(100vh-32px)] bg-[#f8fafc] text-slate-800 font-sans rounded-2xl shadow-xl overflow-hidden">
-        <Sidebar currentPage={currentPage} onNavigate={handleNavigate} />
+        <Sidebar currentPage={currentPage} onNavigate={handleNavigate} onLogout={handleLogout} />
 
         <div className="flex-1 flex flex-col min-w-0 ml-64">
           <Header 
