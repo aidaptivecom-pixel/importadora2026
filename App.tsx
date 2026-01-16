@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import DashboardContent from './components/DashboardContent';
 import LoginPage from './components/LoginPage';
 import { pageVariants } from './utils/animations';
+import { SessionTracker } from './utils/tracking';
 
 export type PageType = 
   // Principal
@@ -53,6 +54,8 @@ export type PageType =
   | 'sensuality'
   // Inversores
   | 'inversores'
+  // Admin
+  | 'admin-monitoreo'
   // Config
   | 'settings'
   | 'integraciones';
@@ -60,8 +63,10 @@ export type PageType =
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(true);
+  const [currentUser, setCurrentUser] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<PageType>('hoy');
   const [selectedOperacionId, setSelectedOperacionId] = useState<string | undefined>(undefined);
+  const trackerRef = useRef<SessionTracker | null>(null);
 
   // Verificar autenticación al cargar
   useEffect(() => {
@@ -73,6 +78,12 @@ const App: React.FC = () => {
           // Verificar si la sesión no ha expirado
           if (parsed.expires && parsed.expires > Date.now()) {
             setIsAuthenticated(true);
+            setCurrentUser(parsed.user || 'unknown');
+            
+            // Iniciar tracking si hay sesión válida
+            const tracker = new SessionTracker(parsed.user || 'unknown');
+            trackerRef.current = tracker;
+            tracker.start('hoy');
           } else {
             // Sesión expirada, limpiar
             localStorage.removeItem('nexo_auth');
@@ -84,15 +95,42 @@ const App: React.FC = () => {
       setIsCheckingAuth(false);
     };
     checkAuth();
+
+    // Cleanup al desmontar
+    return () => {
+      if (trackerRef.current) {
+        trackerRef.current.stop();
+      }
+    };
   }, []);
 
-  const handleLogin = (success: boolean) => {
+  // Trackear cambios de página
+  useEffect(() => {
+    if (isAuthenticated && trackerRef.current && currentPage) {
+      trackerRef.current.trackPageView(currentPage);
+    }
+  }, [currentPage, isAuthenticated]);
+
+  const handleLogin = (success: boolean, username?: string) => {
     setIsAuthenticated(success);
+    if (success && username) {
+      setCurrentUser(username);
+      // Iniciar tracking
+      const tracker = new SessionTracker(username);
+      trackerRef.current = tracker;
+      tracker.start('hoy');
+    }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Detener tracking
+    if (trackerRef.current) {
+      await trackerRef.current.stop();
+      trackerRef.current = null;
+    }
     localStorage.removeItem('nexo_auth');
     setIsAuthenticated(false);
+    setCurrentUser('');
     setCurrentPage('hoy');
   };
 
@@ -145,6 +183,7 @@ const App: React.FC = () => {
       'coresmart': 'CoreSmart',
       'sensuality': 'Sensuality',
       inversores: 'Dashboard Inversores',
+      'admin-monitoreo': 'Monitoreo de Accesos',
       settings: 'Configuración',
       integraciones: 'Integraciones'
     };
@@ -191,6 +230,7 @@ const App: React.FC = () => {
       'coresmart': 'Tiendas Minoristas',
       'sensuality': 'Tiendas Minoristas',
       inversores: 'Inversores',
+      'admin-monitoreo': 'Administración',
       settings: 'Configuración',
       integraciones: 'Configuración'
     };
@@ -200,10 +240,12 @@ const App: React.FC = () => {
   // Pantalla de carga mientras verifica autenticación
   if (isCheckingAuth) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white text-lg">Cargando...</p>
+      <div className="min-h-screen bg-slate-200 p-4">
+        <div className="min-h-[calc(100vh-32px)] bg-[#f8fafc] rounded-2xl shadow-xl flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-slate-600 text-lg">Cargando...</p>
+          </div>
         </div>
       </div>
     );
@@ -219,7 +261,12 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-slate-200 p-4">
       {/* Dashboard Container with rounded corners */}
       <div className="flex min-h-[calc(100vh-32px)] bg-[#f8fafc] text-slate-800 font-sans rounded-2xl shadow-xl overflow-hidden">
-        <Sidebar currentPage={currentPage} onNavigate={handleNavigate} onLogout={handleLogout} />
+        <Sidebar 
+          currentPage={currentPage} 
+          onNavigate={handleNavigate} 
+          onLogout={handleLogout}
+          currentUser={currentUser}
+        />
 
         <div className="flex-1 flex flex-col min-w-0 ml-64">
           <Header 
