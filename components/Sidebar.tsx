@@ -41,7 +41,8 @@ import {
   Bot,
   HeadphonesIcon,
   RefreshCw,
-  Palette
+  Palette,
+  LogOut
 } from 'lucide-react';
 import { PageType } from '../App';
 import { getSidebarBadges, shouldShowBadge, getBadgeUrgency, BadgeUrgency } from '../utils/badgeData';
@@ -49,6 +50,7 @@ import { getSidebarBadges, shouldShowBadge, getBadgeUrgency, BadgeUrgency } from
 interface SidebarProps {
   currentPage: PageType;
   onNavigate: (page: PageType) => void;
+  onLogout?: () => void;
 }
 
 // Animation variants
@@ -96,7 +98,7 @@ const badgeVariants = {
   }
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, onLogout }) => {
   // Get dynamic badge counts
   const badges = useMemo(() => getSidebarBadges(), []);
 
@@ -512,23 +514,31 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        <motion.button 
-          className="flex items-center w-full hover:bg-slate-50 p-2 rounded-lg transition-colors"
-          whileHover={{ scale: 1.02, x: 4 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <motion.div 
-            className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm"
-            whileHover={{ scale: 1.1 }}
-          >
-            MF
-          </motion.div>
-          <div className="ml-3 text-left flex-1">
-            <p className="text-sm font-medium text-slate-700">Matías Admin</p>
-            <p className="text-xs text-slate-400">CEO</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center flex-1">
+            <motion.div 
+              className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm"
+              whileHover={{ scale: 1.1 }}
+            >
+              MF
+            </motion.div>
+            <div className="ml-3 text-left">
+              <p className="text-sm font-medium text-slate-700">Matías Admin</p>
+              <p className="text-xs text-slate-400">CEO</p>
+            </div>
           </div>
-          <ChevronDown size={14} className="text-slate-400" />
-        </motion.button>
+          {onLogout && (
+            <motion.button
+              onClick={onLogout}
+              className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              title="Cerrar sesión"
+            >
+              <LogOut size={18} />
+            </motion.button>
+          )}
+        </div>
       </motion.div>
     </motion.aside>
   );
